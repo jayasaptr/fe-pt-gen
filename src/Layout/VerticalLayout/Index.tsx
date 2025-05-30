@@ -4,15 +4,19 @@ import { Dropdown } from "Common/Components/SideBarDropdown";
 import { Link } from "react-router-dom";
 
 import { menuData } from "../LayoutMenuData";
+import { menuDataUser } from "../LayoutMenuDataUser";
 import withRouter from "Common/withRouter";
 
 //i18n
 import { withTranslation } from "react-i18next";
 
 const VerticalLayout = (props: any) => {
+
+  const user = JSON.parse(localStorage.getItem("authUser")!);
+
   return (
     <React.Fragment>
-      {(menuData || [])?.map((item: any, key: number) => {
+      {(user && user.data.user.role === "user" ? menuDataUser : menuData || [])?.map((item: any, key: number) => {
         return (
           <React.Fragment key={key}>
             {item["isTitle"] ? (

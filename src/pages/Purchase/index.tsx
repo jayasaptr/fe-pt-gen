@@ -1,16 +1,8 @@
 import BreadCrumb from "Common/BreadCrumb";
 import DeleteModal from "Common/DeleteModal";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ToastContainer, toast } from "react-toastify";
-import {
-  CheckCircle,
-  ImagePlus,
-  LucidePrinter,
-  Pencil,
-  Plus,
-  Search,
-  Trash2,
-} from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { ToastContainer, ToastPosition, toast } from "react-toastify";
+import { Check, Eye, ImagePlus, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 // Formik
 import * as Yup from "yup";
@@ -19,7 +11,7 @@ import TableContainer from "Common/TableContainer";
 import Modal from "Common/Components/Modal";
 import { axiosInstance } from "lib/axios";
 
-const Pelanggan = () => {
+const PurchasePage = () => {
   const [data, setData] = useState<any>([]);
   const [eventData, setEventData] = useState<any>();
 
@@ -41,7 +33,7 @@ const Pelanggan = () => {
 
   const handleDelete = () => {
     if (eventData) {
-      handleDeleteSuratMasuk(eventData.id);
+      handleDeleteDataPurchase(eventData.id);
       setDeleteModal(false);
     }
   };
@@ -61,23 +53,21 @@ const Pelanggan = () => {
 
     initialValues: {
       id: (eventData && eventData.id) || "",
-      nama: (eventData && eventData.nama) || "",
-      email: (eventData && eventData.email) || "",
-      phone: (eventData && eventData.phone) || "",
-      address: (eventData && eventData.address) || "",
+      supplier_id: (eventData && eventData.supplier_id) || "",
+      purchase_date: (eventData && eventData.purchase_date) || "",
+      total_amount: (eventData && eventData.total_amount) || "",
     },
     validationSchema: Yup.object({
-      nama: Yup.string().required("nama is Required"),
-      email: Yup.string().required("email is Required"),
-      phone: Yup.string().required("phone is Required"),
-      address: Yup.string().required("address is Required"),
+      supplier_id: Yup.string().required("Pemasok harus diisi!"),
+      purchase_date: Yup.string().required("Tanggal harus diisi!"),
+      total_amount: Yup.string().required("Total Biaya harus diisi!"),
     }),
 
     onSubmit: (values) => {
       if (isEdit) {
-        handleUpdateSuratMasuk(values);
+        handleUpdatePurchase(values);
       } else {
-        handlePostPelanggan(values);
+        handlePostPurchase(values);
       }
       if (isLoading) {
         toggle();
@@ -98,34 +88,27 @@ const Pelanggan = () => {
     }
   }, [show, validation]);
 
-  const printRef = useRef<HTMLDivElement>(null);
-
   // columns
   const columns = useMemo(
     () => [
       {
-        header: "No",
-        accessorKey: "no",
+        header: "Supplier",
+        accessorKey: "supplier_id.name",
         enableColumnFilter: false,
       },
       {
-        header: "Nama",
-        accessorKey: "nama",
+        header: "Tanggal Masuk",
+        accessorKey: "purchase_date",
         enableColumnFilter: false,
       },
       {
-        header: "Email",
-        accessorKey: "email",
+        header: "Total Pembelian",
+        accessorKey: "total_amount",
         enableColumnFilter: false,
       },
       {
-        header: "phone",
-        accessorKey: "phone",
-        enableColumnFilter: false,
-      },
-      {
-        header: "Address",
-        accessorKey: "address",
+        header: "Status",
+        accessorKey: "status",
         enableColumnFilter: false,
       },
       {
@@ -133,17 +116,22 @@ const Pelanggan = () => {
         enableColumnFilter: false,
         enableSorting: true,
         cell: (cell: any) => (
-          <div className="flex gap-2">
-            <Link
+          <div className="flex gap-3">
+            {/* <Link
               to="#!"
               className="flex items-center justify-center size-8 transition-all duration-200 ease-linear rounded-md edit-item-btn bg-slate-100 text-slate-500 hover:text-custom-500 hover:bg-custom-100 dark:bg-zink-600 dark:text-zink-200 dark:hover:bg-custom-500/20 dark:hover:text-custom-500"
               onClick={() => {
                 const data = cell.row.original;
-
                 handleUpdateDataClick(data);
               }}
             >
               <Pencil className="size-4" />
+            </Link> */}
+            <Link
+              to={`/purchase/${cell.row.original.id}/purchase-item`}
+              className="flex items-center justify-center size-8 transition-all duration-200 ease-linear rounded-md remove-item-btn bg-slate-100 text-slate-500 hover:text-custom-500 hover:bg-custom-100 dark:bg-zink-600 dark:text-zink-200 dark:hover:bg-custom-500/20 dark:hover:text-custom-500"
+            >
+              <Eye className="size-4" />
             </Link>
             <Link
               to="#!"
@@ -166,14 +154,18 @@ const Pelanggan = () => {
 
   const naviagate = useNavigate();
 
-  const fetchDataPelanggan = async () => {
+  const fetchDataPurchase = async () => {
     setLoadingV(true);
     try {
-      const userResponse = await axiosInstance.get("/pelanggan", {
+      const userResponse = await axiosInstance.get("/purchases", {
         headers: {
-          Authorization: `Bearer ${user.token}`,
+          Authorization: `Bearer ${user.data.token}`,
         },
       });
+      console.log(
+        "🚀 ~ fetchDataUser ~ userResponse:",
+        userResponse.data.data.data
+      );
       setData(userResponse.data.data.data);
     } catch (error: any) {
       if (error.response.status === 401) {
@@ -185,29 +177,54 @@ const Pelanggan = () => {
     }
   };
 
-  const handlePostPelanggan = async (data: any) => {
+  const [dataPemasok, setDataPemasok] = useState<any>([]);
+
+  const fetchDataPemasok = async () => {
+    setLoadingV(true);
+    try {
+      const userResponse = await axiosInstance.get("/suppliers", {
+        headers: {
+          Authorization: `Bearer ${user.data.token}`,
+        },
+      });
+      setDataPemasok(userResponse.data.data.data);
+    } catch (error: any) {
+      if (error.response.status === 401) {
+        localStorage.removeItem("authUser");
+        naviagate("/login");
+      }
+    } finally {
+      setLoadingV(false);
+    }
+  };
+
+  const handlePostPurchase = async (data: any) => {
     try {
       setIsLoading(true);
       const formData = new FormData();
-      formData.append("nama", data.nama);
-      formData.append("email", data.email);
-      formData.append("address", data.address);
-      formData.append("phone", data.phone);
+      formData.append("supplier_id", data.supplier_id);
+      formData.append("purchase_date", data.purchase_date);
+      formData.append("total_amount", data.total_amount);
+      if (user.data.user.role === "admin") {
+        formData.append("status", "received");
+      } else {
+        formData.append("status", "pending");
+      }
 
-      const userResponse = await axiosInstance.post("/pelanggan", formData, {
+      const userResponse = await axiosInstance.post("/purchases", formData, {
         headers: {
-          Authorization: `Bearer ${user.token}`,
+          Authorization: `Bearer ${user.data.token}`,
           "Content-Type": "multipart/form-data",
         },
       });
 
       if (userResponse.data.success === true) {
-        Success("Data Master Pelanggan Berhasil Ditambahkan");
-        fetchDataPelanggan();
+        Success("Data Purchase Masuk Berhasil Ditambahkan");
+        fetchDataPurchase();
         toggle();
       }
     } catch (error: any) {
-      Error("Data Master Pelanggan Gagal Ditambahkan");
+      Error("Data Purchase Masuk Gagal Ditambahkan");
       if (error.response.status === 401) {
         localStorage.removeItem("authUser");
         naviagate("/login");
@@ -217,18 +234,46 @@ const Pelanggan = () => {
     }
   };
 
-  const handleUpdateSuratMasuk = async (data: any) => {
+  const updateStatus = async (id: number) => {
+    const formData = new FormData();
+    formData.append("status", "approve");
+    try {
+      const response = await axiosInstance.post(
+        `/barang-masuk/${id}`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+          },
+        }
+      );
+
+      if (response.data.success === true) {
+        Success("Status Barang Berhasil Diupdate");
+        fetchDataPurchase();
+      }
+    } catch (error: any) {
+      Error("Status Barang Gagal Diupdate");
+      if (error.response.status === 401) {
+        localStorage.removeItem("authUser");
+        naviagate("/login");
+      }
+    }
+  };
+
+  const handleUpdatePurchase = async (data: any) => {
     try {
       setIsLoading(true);
       const formData = new FormData();
-      formData.append("nama", data.nama);
-      formData.append("email", data.email);
-      formData.append("address", data.address);
-      formData.append("phone", data.phone);
+      formData.append("id_barang", data.id_barang);
+      formData.append("id_pemasok", data.id_pemasok);
+      formData.append("jumlah_masuk", data.jumlah_masuk);
+      formData.append("harga_satuan", data.harga_satuan);
+      formData.append("tanggal", data.tanggal);
       formData.append("_method", "PUT");
 
       const userResponse = await axiosInstance.post(
-        `/pelanggan/${data.id}`,
+        `/barang-masuk/${data.id}`,
         formData,
         {
           headers: {
@@ -239,12 +284,12 @@ const Pelanggan = () => {
       );
 
       if (userResponse.data.success === true) {
-        Success("Data Master Pelanggan Berhasil Diupdate");
-        fetchDataPelanggan();
+        Success("Data Purchase Masuk Berhasil Diupdate");
+        fetchDataPurchase();
         toggle();
       }
     } catch (error: any) {
-      Error("Data Pelanggan Masuk Gagal Diupdate");
+      Error("Data Purchase Masuk Gagal Diupdate");
       if (error.response.status === 401) {
         localStorage.removeItem("authUser");
         naviagate("/login");
@@ -254,19 +299,21 @@ const Pelanggan = () => {
     }
   };
 
-  const handleDeleteSuratMasuk = async (id: any) => {
+  const handleDeleteDataPurchase = async (id: any) => {
     try {
       setIsLoading(true);
-      const userResponse = await axiosInstance.delete(`/pelanggan/${id}`, {
-        headers: { Authorization: `Bearer ${user.token}` },
+      const userResponse = await axiosInstance.delete(`/purchases/${id}`, {
+        headers: {
+          Authorization: `Bearer ${user.data.token}`,
+        },
       });
 
       if (userResponse.data.success === true) {
-        Success("Data Master Pelanggan Berhasil Dihapus");
-        fetchDataPelanggan();
+        Success("Data Purchase Masuk Berhasil Dihapus");
+        fetchDataPurchase();
       }
     } catch (error: any) {
-      Error("Data Pelanggan Masuk Gagal Dihapus");
+      Error("Data Purchase Masuk Gagal Dihapus");
       if (error.response.status === 401) {
         localStorage.removeItem("authUser");
         naviagate("/login");
@@ -277,7 +324,8 @@ const Pelanggan = () => {
   };
 
   useEffect(() => {
-    fetchDataPelanggan();
+    fetchDataPurchase();
+    fetchDataPemasok();
   }, []);
 
   const [loadingV, setLoadingV] = useState(false);
@@ -288,15 +336,7 @@ const Pelanggan = () => {
     </div>
   );
 
-  // const Success = (title: string) =>
-  // toast.success(title, {
-  //   autoClose: 3000,
-  //   theme: "colored",
-  //   icon: false,
-  //   position: toast.POSITION.TOP_RIGHT,
-  //   closeButton: false,
-  // });
-  const Success = (title?: string) =>
+  const Success = (title: string) =>
     toast.success(title, {
       autoClose: 3000,
       theme: "colored",
@@ -316,7 +356,7 @@ const Pelanggan = () => {
 
   return (
     <>
-      <BreadCrumb title="Master Pelanggan" pageTitle="Master Pelanggan" />
+      <BreadCrumb title="Data Purchase" pageTitle="Purchase" />
       <DeleteModal
         show={deleteModal}
         onHide={deleteToggle}
@@ -334,7 +374,7 @@ const Pelanggan = () => {
         <div className="card-body">
           <div className="flex items-center gap-3 mb-4">
             <h6 className="text-15 grow">
-              Master Pelanggan (<b className="total-Employs">{data.length}</b>)
+              Purchase (<b className="total-Employs">{data.length}</b>)
             </h6>
             <div className="shrink-0">
               <Link
@@ -345,7 +385,7 @@ const Pelanggan = () => {
                 onClick={toggle}
               >
                 <Plus className="inline-block size-4" />{" "}
-                <span className="align-middle">Add Master Pelanggan</span>
+                <span className="align-middle">Add Purchase</span>
               </Link>
             </div>
           </div>
@@ -356,20 +396,20 @@ const Pelanggan = () => {
               item.total_harga = item.jumlah * item.harga;
               return item;
             }),
-            (
-              <TableContainer
-                isPagination={true}
-                columns={columns || []}
-                data={data || []}
-                customPageSize={5}
-                divclassName="-mx-5 overflow-x-auto"
-                tableclassName="w-full table-fixed"
-                theadclassName="ltr:text-left rtl:text-right bg-slate-100 dark:bg-zink-600"
-                thclassName="px-3.5 py-2.5 first:pl-5 last:pr-5 font-semibold border-b border-slate-200 dark:border-zink-500"
-                tdclassName="px-3.5 py-2.5 first:pl-5 last:pr-5 border-y border-slate-200 dark:border-zink-500 overflow-hidden text-ellipsis whitespace-nowrap"
-                PaginationClassName="flex flex-col items-center gap-4 px-4 mt-4 md:flex-row"
-              />
-            ))
+              (
+                <TableContainer
+                  isPagination={true}
+                  columns={columns || []}
+                  data={data || []}
+                  customPageSize={5}
+                  divclassName="-mx-5 overflow-x-auto"
+                  tableclassName="w-full whitespace-nowrap"
+                  theadclassName="ltr:text-left rtl:text-right bg-slate-100 dark:bg-zink-600"
+                  thclassName="px-3.5 py-2.5 first:pl-5 last:pr-5 font-semibold border-b border-slate-200 dark:border-zink-500"
+                  tdclassName="px-3.5 py-2.5 first:pl-5 last:pr-5 border-y border-slate-200 dark:border-zink-500"
+                  PaginationClassName="flex flex-col items-center gap-4 px-4 mt-4 md:flex-row"
+                />
+              ))
           ) : loadingV ? (
             loadingView
           ) : (
@@ -399,7 +439,7 @@ const Pelanggan = () => {
           closeButtonClass="transition-all duration-200 ease-linear text-slate-400 hover:text-red-500"
         >
           <Modal.Title className="text-16">
-            {!!isEdit ? "Edit Master Pelanggan" : "Add Master Pelanggan"}
+            {!!isEdit ? "Edit Barang" : "Add Purchase"}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body className="max-h-[calc(theme('height.screen')_-_180px)] p-4 overflow-y-auto">
@@ -423,84 +463,82 @@ const Pelanggan = () => {
             <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
               <div className="xl:col-span-12">
                 <label
-                  htmlFor="nama"
+                  htmlFor="id_pemasok"
                   className="inline-block mb-2 text-base font-medium"
                 >
-                  Nama
+                  Pemasok
                 </label>
-                <input
-                  type="text"
-                  id="nama"
-                  className="form-input border-slate-200 dark:border-zink-500 focus:outline-none focus:border-custom-500 disabled:bg-slate-100 dark:disabled:bg-zink-600 disabled:border-slate-300 dark:disabled:border-zink-500 dark:disabled:text-zink-200 disabled:text-slate-500 dark:text-zink-100 dark:bg-zink-700 dark:focus:border-custom-800 placeholder:text-slate-400 dark:placeholder:text-zink-200"
-                  placeholder="Nama"
-                  name="nama"
-                  onChange={validation.handleChange}
-                  value={validation.values.nama || ""}
-                />
-                {validation.touched.nama && validation.errors.nama ? (
-                  <p className="text-red-400">{validation.errors.nama}</p>
+                <select
+                  id="supplier_id"
+                  className="form-select border-slate-200 dark:border-zink-500 focus:outline-none focus:border-custom-500 disabled:bg-slate-100 dark:disabled:bg-zink-600 disabled:border-slate-300 dark:disabled:border-zink-500 dark:disabled:text-zink-200 disabled:text-slate-500 dark:text-zink-100 dark:bg-zink-700 dark:focus:border-custom-800 placeholder:text-slate-400 dark:placeholder:text-zink-200"
+                  name="supplier_id"
+                  onChange={(e) => {
+                    validation.handleChange(e);
+                    validation.setFieldValue("supplier_id", e.target.value);
+                  }}
+                  onBlur={validation.handleBlur}
+                  value={
+                    validation.values.supplier_id ||
+                    (eventData && eventData.supplier_id) ||
+                    ""
+                  }
+                >
+                  <option value="">Pilih Pemasok</option>
+                  {dataPemasok.map((item: any, index: number) => (
+                    <option key={index} value={item.id}>
+                      {item.name}
+                    </option>
+                  ))}
+                </select>
+                {validation.touched.supplier_id &&
+                  validation.errors.supplier_id ? (
+                  <p className="text-red-400">{validation.errors.supplier_id}</p>
                 ) : null}
               </div>
               <div className="xl:col-span-12">
                 <label
-                  htmlFor="email"
-                  className="inline-block mb-2 text-base font-medium"
+                  htmlFor="purchase_date"
+                  className="inline-block mb-2 text-balance font-medium"
                 >
-                  Email
+                  Tanggal Pembelian
                 </label>
                 <input
-                  type="text"
-                  id="email"
+                  type="date"
+                  id="purchase_date"
                   className="form-input border-slate-200 dark:border-zink-500 focus:outline-none focus:border-custom-500 disabled:bg-slate-100 dark:disabled:bg-zink-600 disabled:border-slate-300 dark:disabled:border-zink-500 dark:disabled:text-zink-200 disabled:text-slate-500 dark:text-zink-100 dark:bg-zink-700 dark:focus:border-custom-800 placeholder:text-slate-400 dark:placeholder:text-zink-200"
-                  placeholder="Email"
-                  name="email"
+                  placeholder="Tanggal "
+                  name="purchase_date"
                   onChange={validation.handleChange}
-                  value={validation.values.email || ""}
+                  value={validation.values.purchase_date || ""}
                 />
-                {validation.touched.email && validation.errors.email ? (
-                  <p className="text-red-400">{validation.errors.email}</p>
+                {validation.touched.purchase_date && validation.errors.purchase_date ? (
+                  <p className="text-red-400">{validation.errors.purchase_date}</p>
                 ) : null}
               </div>
               <div className="xl:col-span-12">
                 <label
-                  htmlFor="phone"
+                  htmlFor="total_amount"
                   className="inline-block mb-2 text-base font-medium"
                 >
-                  Phone
+                  Total Biaya
                 </label>
                 <input
-                  type="tel"
-                  id="phone"
+                  type="number"
+                  id="total_amount"
                   className="form-input border-slate-200 dark:border-zink-500 focus:outline-none focus:border-custom-500 disabled:bg-slate-100 dark:disabled:bg-zink-600 disabled:border-slate-300 dark:disabled:border-zink-500 dark:disabled:text-zink-200 disabled:text-slate-500 dark:text-zink-100 dark:bg-zink-700 dark:focus:border-custom-800 placeholder:text-slate-400 dark:placeholder:text-zink-200"
-                  placeholder="Phone"
-                  name="phone"
+                  placeholder="Total Biaya"
+                  name="total_amount"
                   onChange={validation.handleChange}
-                  value={validation.values.phone || ""}
+                  value={validation.values.total_amount || ""}
                 />
-                {validation.touched.phone && validation.errors.phone ? (
-                  <p className="text-red-400">{validation.errors.phone}</p>
+                {validation.touched.total_amount &&
+                  validation.errors.total_amount ? (
+                  <p className="text-red-400">
+                    {validation.errors.total_amount}
+                  </p>
                 ) : null}
               </div>
-              <div className="xl:col-span-12">
-                <label
-                  htmlFor="address"
-                  className="inline-block mb-2 text-base font-medium"
-                >
-                  Address
-                </label>
-                <input
-                  type="text"
-                  id="address"
-                  className="form-input border-slate-200 dark:border-zink-500 focus:outline-none focus:border-custom-500 disabled:bg-slate-100 dark:disabled:bg-zink-600 disabled:border-slate-300 dark:disabled:border-zink-500 dark:disabled:text-zink-200 disabled:text-slate-500 dark:text-zink-100 dark:bg-zink-700 dark:focus:border-custom-800 placeholder:text-slate-400 dark:placeholder:text-zink-200"
-                  placeholder="Address"
-                  name="address"
-                  onChange={validation.handleChange}
-                  value={validation.values.address || ""}
-                />
-                {validation.touched.address && validation.errors.address ? (
-                  <p className="text-red-400">{validation.errors.address}</p>
-                ) : null}
-              </div>
+
             </div>
             <div className="flex justify-end gap-2 mt-4">
               <button
@@ -521,8 +559,8 @@ const Pelanggan = () => {
                 {isLoading
                   ? "Loading"
                   : !!isEdit
-                  ? "Update"
-                  : "Add Master Pelanggan"}
+                    ? "Update"
+                    : "Add Barang Masuk"}
               </button>
             </div>
           </form>
@@ -532,4 +570,4 @@ const Pelanggan = () => {
   );
 };
 
-export default Pelanggan;
+export default PurchasePage;

@@ -66,9 +66,8 @@ const MasterUser = () => {
       name: (eventData && eventData.name) || "",
       email: (eventData && eventData.email) || "",
       password: (eventData && eventData.password) || "",
-      jabatan: (eventData && eventData.jabatan) || "",
-      department: (eventData && eventData.department) || "",
       role: (eventData && eventData.role) || "",
+      employee_id: (eventData && eventData.employee_id) || "",
     },
     validationSchema: Yup.object({
       name: Yup.string().required("Name is Required"),
@@ -76,8 +75,6 @@ const MasterUser = () => {
       password: isEdit
         ? Yup.string()
         : Yup.string().required("Password is Required"),
-      jabatan: Yup.string().required("Jabatan is Required"),
-      department: Yup.string().required("Department is Required"),
       role: Yup.string().required("Role is Required"),
     }),
 
@@ -128,16 +125,6 @@ const MasterUser = () => {
         enableColumnFilter: false,
       },
       {
-        header: "Jabatan",
-        accessorKey: "jabatan",
-        enableColumnFilter: false,
-      },
-      {
-        header: "Department",
-        accessorKey: "department",
-        enableColumnFilter: false,
-      },
-      {
         header: "Role",
         accessorKey: "role",
         enableColumnFilter: false,
@@ -185,13 +172,9 @@ const MasterUser = () => {
     try {
       const userResponse = await axiosInstance.get("/users", {
         headers: {
-          Authorization: `Bearer ${user.token}`,
+          Authorization: `Bearer ${user.data.token}`,
         },
       });
-      console.log(
-        "🚀 ~ fetchDataUser ~ userResponse:",
-        userResponse.data.data.data
-      );
       setData(userResponse.data.data.data);
     } catch (error: any) {
       if (error.response.status === 401) {
@@ -209,19 +192,18 @@ const MasterUser = () => {
       const formData = new FormData();
       formData.append("name", data.name);
       formData.append("email", data.email);
-      formData.append("password", data.password);
-      formData.append("department", data.department);
-      formData.append("jabatan", data.jabatan);
       formData.append("role", data.role);
+      formData.append("password", data.password);
+      formData.append("employee_id", data.employee_id);
 
       const userResponse = await axiosInstance.post("/users", formData, {
         headers: {
-          Authorization: `Bearer ${user.token}`,
+          Authorization: `Bearer ${user.data.token}`,
           "Content-Type": "multipart/form-data",
         },
       });
 
-      if (userResponse.data.success === true) {
+      if (userResponse.data.status === true) {
         Success("Data Master User Berhasil Ditambahkan");
         fetchDataBarang();
         toggle();
@@ -237,15 +219,35 @@ const MasterUser = () => {
     }
   };
 
+  const [dataEmployee, setDataEmployee] = useState<any>([]);
+  const fetchDataEmployee = async () => {
+    setLoadingV(true);
+    try {
+      const userResponse = await axiosInstance.get("/employee", {
+        headers: {
+          Authorization: `Bearer ${user.data.token}`,
+        },
+      });
+      setDataEmployee(userResponse.data.data.data);
+    } catch (error: any) {
+      if (error.response.status === 401) {
+        localStorage.removeItem("authUser");
+        navigate("/login");
+      }
+    } finally {
+      setLoadingV(false);
+    }
+  };
+
   const handleUpdateSuratMasuk = async (data: any) => {
     try {
       setIsLoading(true);
       const formData = new FormData();
       formData.append("name", data.name);
       formData.append("email", data.email);
-      formData.append("department", data.department);
-      formData.append("jabatan", data.jabatan);
       formData.append("role", data.role);
+      formData.append("password", data.password);
+      formData.append("employee_id", data.employee_id);
       formData.append("_method", "PUT");
 
       const userResponse = await axiosInstance.post(
@@ -253,13 +255,13 @@ const MasterUser = () => {
         formData,
         {
           headers: {
-            Authorization: `Bearer ${user.token}`,
+            Authorization: `Bearer ${user.data.token}`,
             "Content-Type": "multipart/form-data",
           },
         }
       );
 
-      if (userResponse.data.success === true) {
+      if (userResponse.data.status === true) {
         Success("Data Master User Berhasil Diupdate");
         fetchDataBarang();
         toggle();
@@ -279,10 +281,10 @@ const MasterUser = () => {
     try {
       setIsLoading(true);
       const userResponse = await axiosInstance.delete(`/users/${id}`, {
-        headers: { Authorization: `Bearer ${user.token}` },
+        headers: { Authorization: `Bearer ${user.data.token}` },
       });
 
-      if (userResponse.data.success === true) {
+      if (userResponse.data.status === true) {
         Success("Data Master User Berhasil Dihapus");
         fetchDataBarang();
       }
@@ -299,6 +301,7 @@ const MasterUser = () => {
 
   useEffect(() => {
     fetchDataBarang();
+    fetchDataEmployee();
   }, []);
 
   const [loadingV, setLoadingV] = useState(false);
@@ -466,7 +469,7 @@ const MasterUser = () => {
                   <p className="text-red-400">{validation.errors.email}</p>
                 ) : null}
               </div>
-              {isEdit === false ? <div className="xl:col-span-12">
+              <div className="xl:col-span-12">
                 <label
                   htmlFor="password"
                   className="inline-block mb-2 text-base font-medium"
@@ -484,47 +487,6 @@ const MasterUser = () => {
                 />
                 {validation.touched.password && validation.errors.password ? (
                   <p className="text-red-400">{validation.errors.password}</p>
-                ) : null}
-              </div> : <></>}
-              <div className="xl:col-span-12">
-                <label
-                  htmlFor="jabatan"
-                  className="inline-block mb-2 text-base font-medium"
-                >
-                  Jabatan
-                </label>
-                <input
-                  type="text"
-                  id="jabatan"
-                  className="form-input border-slate-200 dark:border-zink-500 focus:outline-none focus:border-custom-500 disabled:bg-slate-100 dark:disabled:bg-zink-600 disabled:border-slate-300 dark:disabled:border-zink-500 dark:disabled:text-zink-200 disabled:text-slate-500 dark:text-zink-100 dark:bg-zink-700 dark:focus:border-custom-800 placeholder:text-slate-400 dark:placeholder:text-zink-200"
-                  placeholder="Jabatan"
-                  name="jabatan"
-                  onChange={validation.handleChange}
-                  value={validation.values.jabatan || ""}
-                />
-                {validation.touched.jabatan && validation.errors.jabatan ? (
-                  <p className="text-red-400">{validation.errors.jabatan}</p>
-                ) : null}
-              </div>
-              <div className="xl:col-span-12">
-                <label
-                  htmlFor="department"
-                  className="inline-block mb-2 text-base font-medium"
-                >
-                  Department
-                </label>
-                <input
-                  type="text"
-                  id="department"
-                  className="form-input border-slate-200 dark:border-zink-500 focus:outline-none focus:border-custom-500 disabled:bg-slate-100 dark:disabled:bg-zink-600 disabled:border-slate-300 dark:disabled:border-zink-500 dark:disabled:text-zink-200 disabled:text-slate-500 dark:text-zink-100 dark:bg-zink-700 dark:focus:border-custom-800 placeholder:text-slate-400 dark:placeholder:text-zink-200"
-                  placeholder="Department"
-                  name="department"
-                  onChange={validation.handleChange}
-                  value={validation.values.department || ""}
-                />
-                {validation.touched.department &&
-                  validation.errors.department ? (
-                  <p className="text-red-400">{validation.errors.department}</p>
                 ) : null}
               </div>
               <div className="xl:col-span-12">
@@ -549,6 +511,37 @@ const MasterUser = () => {
                 {validation.touched.role && validation.errors.role ? (
                   <p className="text-red-400">{validation.errors.role}</p>
                 ) : null}
+              </div>
+              <div className="xl:col-span-12">
+                <label
+                  htmlFor="employee_id"
+                  className="inline-block mb-2 text-base font-medium"
+                >
+                  Employee
+                </label>
+                <select
+                  id="employee_id"
+                  className="form-select border-slate-200 dark:border-zink-500 focus:outline-none focus:border-custom-500 disabled:bg-slate-100 dark:disabled:bg-zink-600 disabled:border-slate-300 dark:disabled:border-zink-500 dark:disabled:text-zink-200 disabled:text-slate-500 dark:text-zink-100 dark:bg-zink-700 dark:focus:border-custom-800 placeholder:text-slate-400 dark:placeholder:text-zink-200"
+                  name="employee_id"
+                  onChange={(e) => {
+                    validation.handleChange(e);
+                    validation.setFieldValue("employee_id", e.target.value);
+                    validation.setFieldValue("basic_salary", dataEmployee.find((emp: any) => String(emp.id) === e.target.value)?.salary || "");
+                  }}
+                  onBlur={validation.handleBlur}
+                  value={
+                    validation.values.employee_id ||
+                    (eventData && eventData.employee_id) ||
+                    ""
+                  }
+                >
+                  <option value="">Pilih Employee</option>
+                  {dataEmployee.map((item: any, index: number) => (
+                    <option key={index} value={item.id}>
+                      {item.name}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
             <div className="flex justify-end gap-2 mt-4">

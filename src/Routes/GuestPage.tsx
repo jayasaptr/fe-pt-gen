@@ -4,7 +4,7 @@ export const GuestPage = (props: any) => {
   const user = JSON.parse(localStorage.getItem("authUser")!);
 
   // cek apakah data user ada
-  if (user != null && user.user.id) {
+  if (user != null && user.data.user.id) {
     // jika ada redirect ke dashboard
     return <Navigate to="/dashboard" />;
   }

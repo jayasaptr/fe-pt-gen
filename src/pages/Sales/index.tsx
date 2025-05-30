@@ -1,16 +1,8 @@
 import BreadCrumb from "Common/BreadCrumb";
 import DeleteModal from "Common/DeleteModal";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ToastContainer, toast } from "react-toastify";
-import {
-  CheckCircle,
-  ImagePlus,
-  LucidePrinter,
-  Pencil,
-  Plus,
-  Search,
-  Trash2,
-} from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { ToastContainer, ToastPosition, toast } from "react-toastify";
+import { Check, Eye, ImagePlus, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 // Formik
 import * as Yup from "yup";
@@ -19,7 +11,7 @@ import TableContainer from "Common/TableContainer";
 import Modal from "Common/Components/Modal";
 import { axiosInstance } from "lib/axios";
 
-const Pemasok = () => {
+const SalesPage = () => {
   const [data, setData] = useState<any>([]);
   const [eventData, setEventData] = useState<any>();
 
@@ -41,7 +33,7 @@ const Pemasok = () => {
 
   const handleDelete = () => {
     if (eventData) {
-      handleDeleteSuratMasuk(eventData.id);
+      handleDeleteDataSales(eventData.id);
       setDeleteModal(false);
     }
   };
@@ -61,29 +53,21 @@ const Pemasok = () => {
 
     initialValues: {
       id: (eventData && eventData.id) || "",
-      nama: (eventData && eventData.nama) || "",
-      email: (eventData && eventData.email) || "",
-      phone: (eventData && eventData.phone) || "",
-      address: (eventData && eventData.address) || "",
-      bank_type: (eventData && eventData.bank_type) || "",
-      bank_number: (eventData && eventData.bank_number) || "",
-      tax_number: (eventData && eventData.tax_number) || "",
+      customer_id: (eventData && eventData.customer_id) || "",
+      sales_date: (eventData && eventData.sales_date) || "",
+      sales_amount: (eventData && eventData.sales_amount) || "",
     },
     validationSchema: Yup.object({
-      nama: Yup.string().required("nama is Required"),
-      email: Yup.string().required("email is Required"),
-      phone: Yup.string().required("phone is Required"),
-      address: Yup.string().required("address is Required"),
-      bank_type: Yup.string().required("Bank Type is Required"),
-      bank_number: Yup.string().required("Bank Number is Required"),
-      tax_number: Yup.string().required("Tax Number is Required"),
+      customer_id: Yup.string().required("Customer harus diisi!"),
+      sales_date: Yup.string().required("Tanggal harus diisi!"),
+      sales_amount: Yup.string().required("Total Penjualan harus diisi!"),
     }),
 
     onSubmit: (values) => {
       if (isEdit) {
-        handleUpdateSuratMasuk(values);
+        handleUpdateSales(values);
       } else {
-        handlePostPemasok(values);
+        handlePostSales(values);
       }
       if (isLoading) {
         toggle();
@@ -104,49 +88,27 @@ const Pemasok = () => {
     }
   }, [show, validation]);
 
-  const printRef = useRef<HTMLDivElement>(null);
-
   // columns
   const columns = useMemo(
     () => [
       {
-        header: "No",
-        accessorKey: "no",
+        header: "Customer",
+        accessorKey: "customer_id.name",
         enableColumnFilter: false,
       },
       {
-        header: "Nama",
-        accessorKey: "nama",
+        header: "Tanggal Penjualan",
+        accessorKey: "sales_date",
         enableColumnFilter: false,
       },
       {
-        header: "Email",
-        accessorKey: "email",
+        header: "Total Penjualan",
+        accessorKey: "sales_amount",
         enableColumnFilter: false,
       },
       {
-        header: "phone",
-        accessorKey: "phone",
-        enableColumnFilter: false,
-      },
-      {
-        header: "Address",
-        accessorKey: "address",
-        enableColumnFilter: false,
-      },
-      {
-        header: "Bank Type",
-        accessorKey: "bank_type",
-        enableColumnFilter: false,
-      },
-      {
-        header: "Bank Number",
-        accessorKey: "bank_number",
-        enableColumnFilter: false,
-      },
-      {
-        header: "Tax Number",
-        accessorKey: "tax_number",
+        header: "Status",
+        accessorKey: "sales_status",
         enableColumnFilter: false,
       },
       {
@@ -154,17 +116,22 @@ const Pemasok = () => {
         enableColumnFilter: false,
         enableSorting: true,
         cell: (cell: any) => (
-          <div className="flex gap-2">
-            <Link
+          <div className="flex gap-3">
+            {/* <Link
               to="#!"
               className="flex items-center justify-center size-8 transition-all duration-200 ease-linear rounded-md edit-item-btn bg-slate-100 text-slate-500 hover:text-custom-500 hover:bg-custom-100 dark:bg-zink-600 dark:text-zink-200 dark:hover:bg-custom-500/20 dark:hover:text-custom-500"
               onClick={() => {
                 const data = cell.row.original;
-
                 handleUpdateDataClick(data);
               }}
             >
               <Pencil className="size-4" />
+            </Link> */}
+            <Link
+              to={`/sales/${cell.row.original.id}/sales-item`}
+              className="flex items-center justify-center size-8 transition-all duration-200 ease-linear rounded-md remove-item-btn bg-slate-100 text-slate-500 hover:text-custom-500 hover:bg-custom-100 dark:bg-zink-600 dark:text-zink-200 dark:hover:bg-custom-500/20 dark:hover:text-custom-500"
+            >
+              <Eye className="size-4" />
             </Link>
             <Link
               to="#!"
@@ -187,14 +154,18 @@ const Pemasok = () => {
 
   const naviagate = useNavigate();
 
-  const fetchDataPemasok = async () => {
+  const fetchDataSales = async () => {
     setLoadingV(true);
     try {
-      const userResponse = await axiosInstance.get("/pemasok", {
+      const userResponse = await axiosInstance.get("/sales", {
         headers: {
-          Authorization: `Bearer ${user.token}`,
+          Authorization: `Bearer ${user.data.token}`,
         },
       });
+      console.log(
+        "🚀 ~ fetchDataUser ~ userResponse:",
+        userResponse.data.data.data
+      );
       setData(userResponse.data.data.data);
     } catch (error: any) {
       if (error.response.status === 401) {
@@ -206,32 +177,54 @@ const Pemasok = () => {
     }
   };
 
-  const handlePostPemasok = async (data: any) => {
+  const [dataPemasok, setDataPemasok] = useState<any>([]);
+
+  const fetchDataPemasok = async () => {
+    setLoadingV(true);
+    try {
+      const userResponse = await axiosInstance.get("/customers", {
+        headers: {
+          Authorization: `Bearer ${user.data.token}`,
+        },
+      });
+      setDataPemasok(userResponse.data.data.data);
+    } catch (error: any) {
+      if (error.response.status === 401) {
+        localStorage.removeItem("authUser");
+        naviagate("/login");
+      }
+    } finally {
+      setLoadingV(false);
+    }
+  };
+
+  const handlePostSales = async (data: any) => {
     try {
       setIsLoading(true);
       const formData = new FormData();
-      formData.append("nama", data.nama);
-      formData.append("email", data.email);
-      formData.append("address", data.address);
-      formData.append("phone", data.phone);
-      formData.append("bank_type", data.bank_type);
-      formData.append("bank_number", data.bank_number);
-      formData.append("tax_number", data.tax_number);
+      formData.append("customer_id", data.customer_id);
+      formData.append("sales_date", data.sales_date);
+      formData.append("sales_amount", data.sales_amount);
+      if (user.data.user.role === "admin") {
+        formData.append("sales_status", "paid");
+      } else {
+        formData.append("sales_status", "draft");
+      }
 
-      const userResponse = await axiosInstance.post("/pemasok", formData, {
+      const userResponse = await axiosInstance.post("/sales", formData, {
         headers: {
-          Authorization: `Bearer ${user.token}`,
+          Authorization: `Bearer ${user.data.token}`,
           "Content-Type": "multipart/form-data",
         },
       });
 
-      if (userResponse.data.success === true) {
-        Success("Data Master Pemasok Berhasil Ditambahkan");
-        fetchDataPemasok();
+      if (userResponse.data.status === true) {
+        Success("Data Sales Masuk Berhasil Ditambahkan");
+        fetchDataSales();
         toggle();
       }
     } catch (error: any) {
-      Error("Data Master Pemasok Gagal Ditambahkan");
+      Error("Data Sales Masuk Gagal Ditambahkan");
       if (error.response.status === 401) {
         localStorage.removeItem("authUser");
         naviagate("/login");
@@ -241,21 +234,44 @@ const Pemasok = () => {
     }
   };
 
-  const handleUpdateSuratMasuk = async (data: any) => {
+  const updateStatus = async (id: number) => {
+    const formData = new FormData();
+    formData.append("status", "approve");
+    try {
+      const response = await axiosInstance.post(
+        `/barang-masuk/${id}`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+          },
+        }
+      );
+
+      if (response.data.status === true) {
+        Success("Status Barang Berhasil Diupdate");
+        fetchDataSales();
+      }
+    } catch (error: any) {
+      Error("Status Barang Gagal Diupdate");
+      if (error.response.status === 401) {
+        localStorage.removeItem("authUser");
+        naviagate("/login");
+      }
+    }
+  };
+
+  const handleUpdateSales = async (data: any) => {
     try {
       setIsLoading(true);
       const formData = new FormData();
-      formData.append("nama", data.nama);
-      formData.append("email", data.email);
-      formData.append("address", data.address);
-      formData.append("phone", data.phone);
-      formData.append("bank_type", data.bank_type);
-      formData.append("bank_number", data.bank_number);
-      formData.append("tax_number", data.tax_number);
+      formData.append("customer_id", data.customer_id);
+      formData.append("sales_date", data.sales_date);
+      formData.append("sales_amount", data.sales_amount);
       formData.append("_method", "PUT");
 
       const userResponse = await axiosInstance.post(
-        `/pemasok/${data.id}`,
+        `/sales/${data.id}`,
         formData,
         {
           headers: {
@@ -266,12 +282,12 @@ const Pemasok = () => {
       );
 
       if (userResponse.data.success === true) {
-        Success("Data Master Pemasok Berhasil Diupdate");
-        fetchDataPemasok();
+        Success("Data Sales Masuk Berhasil Diupdate");
+        fetchDataSales();
         toggle();
       }
     } catch (error: any) {
-      Error("Data Pemasok Masuk Gagal Diupdate");
+      Error("Data Sales Masuk Gagal Diupdate");
       if (error.response.status === 401) {
         localStorage.removeItem("authUser");
         naviagate("/login");
@@ -281,19 +297,21 @@ const Pemasok = () => {
     }
   };
 
-  const handleDeleteSuratMasuk = async (id: any) => {
+  const handleDeleteDataSales = async (id: any) => {
     try {
       setIsLoading(true);
-      const userResponse = await axiosInstance.delete(`/pemasok/${id}`, {
-        headers: { Authorization: `Bearer ${user.token}` },
+      const userResponse = await axiosInstance.delete(`/sales/${id}`, {
+        headers: {
+          Authorization: `Bearer ${user.data.token}`,
+        },
       });
 
-      if (userResponse.data.success === true) {
-        Success("Data Master Pemasok Berhasil Dihapus");
-        fetchDataPemasok();
+      if (userResponse.data.status === true) {
+        Success("Data Sales Masuk Berhasil Dihapus");
+        fetchDataSales();
       }
     } catch (error: any) {
-      Error("Data Pemasok Masuk Gagal Dihapus");
+      Error("Data Sales Masuk Gagal Dihapus");
       if (error.response.status === 401) {
         localStorage.removeItem("authUser");
         naviagate("/login");
@@ -304,6 +322,7 @@ const Pemasok = () => {
   };
 
   useEffect(() => {
+    fetchDataSales();
     fetchDataPemasok();
   }, []);
 
@@ -315,15 +334,7 @@ const Pemasok = () => {
     </div>
   );
 
-  // const Success = (title: string) =>
-  // toast.success(title, {
-  //   autoClose: 3000,
-  //   theme: "colored",
-  //   icon: false,
-  //   position: toast.POSITION.TOP_RIGHT,
-  //   closeButton: false,
-  // });
-  const Success = (title?: string) =>
+  const Success = (title: string) =>
     toast.success(title, {
       autoClose: 3000,
       theme: "colored",
@@ -343,7 +354,7 @@ const Pemasok = () => {
 
   return (
     <>
-      <BreadCrumb title="Master Pemasok" pageTitle="Master Pemasok" />
+      <BreadCrumb title="Data Sales" pageTitle="Sales" />
       <DeleteModal
         show={deleteModal}
         onHide={deleteToggle}
@@ -361,7 +372,7 @@ const Pemasok = () => {
         <div className="card-body">
           <div className="flex items-center gap-3 mb-4">
             <h6 className="text-15 grow">
-              Master Pemasok (<b className="total-Employs">{data.length}</b>)
+              Sales (<b className="total-Employs">{data.length}</b>)
             </h6>
             <div className="shrink-0">
               <Link
@@ -372,7 +383,7 @@ const Pemasok = () => {
                 onClick={toggle}
               >
                 <Plus className="inline-block size-4" />{" "}
-                <span className="align-middle">Add Master Pemasok</span>
+                <span className="align-middle">Add Sales</span>
               </Link>
             </div>
           </div>
@@ -383,20 +394,20 @@ const Pemasok = () => {
               item.total_harga = item.jumlah * item.harga;
               return item;
             }),
-            (
-              <TableContainer
-                isPagination={true}
-                columns={columns || []}
-                data={data || []}
-                customPageSize={5}
-                divclassName="-mx-5 overflow-x-auto"
-                tableclassName="w-full table-fixed"
-                theadclassName="ltr:text-left rtl:text-right bg-slate-100 dark:bg-zink-600"
-                thclassName="px-3.5 py-2.5 first:pl-5 last:pr-5 font-semibold border-b border-slate-200 dark:border-zink-500"
-                tdclassName="px-3.5 py-2.5 first:pl-5 last:pr-5 border-y border-slate-200 dark:border-zink-500 overflow-hidden text-ellipsis whitespace-nowrap"
-                PaginationClassName="flex flex-col items-center gap-4 px-4 mt-4 md:flex-row"
-              />
-            ))
+              (
+                <TableContainer
+                  isPagination={true}
+                  columns={columns || []}
+                  data={data || []}
+                  customPageSize={5}
+                  divclassName="-mx-5 overflow-x-auto"
+                  tableclassName="w-full whitespace-nowrap"
+                  theadclassName="ltr:text-left rtl:text-right bg-slate-100 dark:bg-zink-600"
+                  thclassName="px-3.5 py-2.5 first:pl-5 last:pr-5 font-semibold border-b border-slate-200 dark:border-zink-500"
+                  tdclassName="px-3.5 py-2.5 first:pl-5 last:pr-5 border-y border-slate-200 dark:border-zink-500"
+                  PaginationClassName="flex flex-col items-center gap-4 px-4 mt-4 md:flex-row"
+                />
+              ))
           ) : loadingV ? (
             loadingView
           ) : (
@@ -426,7 +437,7 @@ const Pemasok = () => {
           closeButtonClass="transition-all duration-200 ease-linear text-slate-400 hover:text-red-500"
         >
           <Modal.Title className="text-16">
-            {!!isEdit ? "Edit Master Pemasok" : "Add Master Pemasok"}
+            {!!isEdit ? "Edit Barang" : "Add Sales"}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body className="max-h-[calc(theme('height.screen')_-_180px)] p-4 overflow-y-auto">
@@ -450,148 +461,82 @@ const Pemasok = () => {
             <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
               <div className="xl:col-span-12">
                 <label
-                  htmlFor="nama"
+                  htmlFor="customer_id"
                   className="inline-block mb-2 text-base font-medium"
                 >
-                  Nama
+                  Customer
                 </label>
-                <input
-                  type="text"
-                  id="nama"
-                  className="form-input border-slate-200 dark:border-zink-500 focus:outline-none focus:border-custom-500 disabled:bg-slate-100 dark:disabled:bg-zink-600 disabled:border-slate-300 dark:disabled:border-zink-500 dark:disabled:text-zink-200 disabled:text-slate-500 dark:text-zink-100 dark:bg-zink-700 dark:focus:border-custom-800 placeholder:text-slate-400 dark:placeholder:text-zink-200"
-                  placeholder="Nama"
-                  name="nama"
-                  onChange={validation.handleChange}
-                  value={validation.values.nama || ""}
-                />
-                {validation.touched.nama && validation.errors.nama ? (
-                  <p className="text-red-400">{validation.errors.nama}</p>
+                <select
+                  id="customer_id"
+                  className="form-select border-slate-200 dark:border-zink-500 focus:outline-none focus:border-custom-500 disabled:bg-slate-100 dark:disabled:bg-zink-600 disabled:border-slate-300 dark:disabled:border-zink-500 dark:disabled:text-zink-200 disabled:text-slate-500 dark:text-zink-100 dark:bg-zink-700 dark:focus:border-custom-800 placeholder:text-slate-400 dark:placeholder:text-zink-200"
+                  name="customer_id"
+                  onChange={(e) => {
+                    validation.handleChange(e);
+                    validation.setFieldValue("customer_id", e.target.value);
+                  }}
+                  onBlur={validation.handleBlur}
+                  value={
+                    validation.values.customer_id ||
+                    (eventData && eventData.customer_id) ||
+                    ""
+                  }
+                >
+                  <option value="">Pilih Customer</option>
+                  {dataPemasok.map((item: any, index: number) => (
+                    <option key={index} value={item.id}>
+                      {item.name}
+                    </option>
+                  ))}
+                </select>
+                {validation.touched.customer_id &&
+                  validation.errors.customer_id ? (
+                  <p className="text-red-400">{validation.errors.customer_id}</p>
                 ) : null}
               </div>
               <div className="xl:col-span-12">
                 <label
-                  htmlFor="email"
-                  className="inline-block mb-2 text-base font-medium"
+                  htmlFor="sales_date"
+                  className="inline-block mb-2 text-balance font-medium"
                 >
-                  Email
+                  Tanggal Penjualan
                 </label>
                 <input
-                  type="text"
-                  id="email"
+                  type="date"
+                  id="sales_date"
                   className="form-input border-slate-200 dark:border-zink-500 focus:outline-none focus:border-custom-500 disabled:bg-slate-100 dark:disabled:bg-zink-600 disabled:border-slate-300 dark:disabled:border-zink-500 dark:disabled:text-zink-200 disabled:text-slate-500 dark:text-zink-100 dark:bg-zink-700 dark:focus:border-custom-800 placeholder:text-slate-400 dark:placeholder:text-zink-200"
-                  placeholder="Email"
-                  name="email"
+                  placeholder="Tanggal "
+                  name="sales_date"
                   onChange={validation.handleChange}
-                  value={validation.values.email || ""}
+                  value={validation.values.sales_date || ""}
                 />
-                {validation.touched.email && validation.errors.email ? (
-                  <p className="text-red-400">{validation.errors.email}</p>
+                {validation.touched.sales_date && validation.errors.sales_date ? (
+                  <p className="text-red-400">{validation.errors.sales_date}</p>
                 ) : null}
               </div>
               <div className="xl:col-span-12">
                 <label
-                  htmlFor="phone"
+                  htmlFor="sales_amount"
                   className="inline-block mb-2 text-base font-medium"
                 >
-                  Phone
-                </label>
-                <input
-                  type="tel"
-                  id="phone"
-                  className="form-input border-slate-200 dark:border-zink-500 focus:outline-none focus:border-custom-500 disabled:bg-slate-100 dark:disabled:bg-zink-600 disabled:border-slate-300 dark:disabled:border-zink-500 dark:disabled:text-zink-200 disabled:text-slate-500 dark:text-zink-100 dark:bg-zink-700 dark:focus:border-custom-800 placeholder:text-slate-400 dark:placeholder:text-zink-200"
-                  placeholder="Phone"
-                  name="phone"
-                  onChange={validation.handleChange}
-                  value={validation.values.phone || ""}
-                />
-                {validation.touched.phone && validation.errors.phone ? (
-                  <p className="text-red-400">{validation.errors.phone}</p>
-                ) : null}
-              </div>
-              <div className="xl:col-span-12">
-                <label
-                  htmlFor="address"
-                  className="inline-block mb-2 text-base font-medium"
-                >
-                  Address
-                </label>
-                <input
-                  type="text"
-                  id="address"
-                  className="form-input border-slate-200 dark:border-zink-500 focus:outline-none focus:border-custom-500 disabled:bg-slate-100 dark:disabled:bg-zink-600 disabled:border-slate-300 dark:disabled:border-zink-500 dark:disabled:text-zink-200 disabled:text-slate-500 dark:text-zink-100 dark:bg-zink-700 dark:focus:border-custom-800 placeholder:text-slate-400 dark:placeholder:text-zink-200"
-                  placeholder="Address"
-                  name="address"
-                  onChange={validation.handleChange}
-                  value={validation.values.address || ""}
-                />
-                {validation.touched.address && validation.errors.address ? (
-                  <p className="text-red-400">{validation.errors.address}</p>
-                ) : null}
-              </div>
-              <div className="xl:col-span-12">
-                <label
-                  htmlFor="bank_type"
-                  className="inline-block mb-2 text-base font-medium"
-                >
-                  Bank Type
-                </label>
-                <input
-                  type="text"
-                  id="bank_type"
-                  className="form-input border-slate-200 dark:border-zink-500 focus:outline-none focus:border-custom-500 disabled:bg-slate-100 dark:disabled:bg-zink-600 disabled:border-slate-300 dark:disabled:border-zink-500 dark:disabled:text-zink-200 disabled:text-slate-500 dark:text-zink-100 dark:bg-zink-700 dark:focus:border-custom-800 placeholder:text-slate-400 dark:placeholder:text-zink-200"
-                  placeholder="Bank Type"
-                  name="bank_type"
-                  onChange={validation.handleChange}
-                  value={validation.values.bank_type || ""}
-                />
-                {validation.touched.bank_type && validation.errors.bank_type ? (
-                  <p className="text-red-400">{validation.errors.bank_type}</p>
-                ) : null}
-              </div>
-              <div className="xl:col-span-12">
-                <label
-                  htmlFor="bank_number"
-                  className="inline-block mb-2 text-base font-medium"
-                >
-                  Bank Number
+                  Total Penjualan
                 </label>
                 <input
                   type="number"
-                  id="bank_number"
+                  id="sales_amount"
                   className="form-input border-slate-200 dark:border-zink-500 focus:outline-none focus:border-custom-500 disabled:bg-slate-100 dark:disabled:bg-zink-600 disabled:border-slate-300 dark:disabled:border-zink-500 dark:disabled:text-zink-200 disabled:text-slate-500 dark:text-zink-100 dark:bg-zink-700 dark:focus:border-custom-800 placeholder:text-slate-400 dark:placeholder:text-zink-200"
-                  placeholder="Bank Number"
-                  name="bank_number"
+                  placeholder="Total Biaya"
+                  name="sales_amount"
                   onChange={validation.handleChange}
-                  value={validation.values.bank_number || ""}
+                  value={validation.values.sales_amount || ""}
                 />
-                {validation.touched.bank_number &&
-                validation.errors.bank_number ? (
+                {validation.touched.sales_amount &&
+                  validation.errors.sales_amount ? (
                   <p className="text-red-400">
-                    {validation.errors.bank_number}
+                    {validation.errors.sales_amount}
                   </p>
                 ) : null}
               </div>
-              <div className="xl:col-span-12">
-                <label
-                  htmlFor="tax_number"
-                  className="inline-block mb-2 text-base font-medium"
-                >
-                  Tax Number
-                </label>
-                <input
-                  type="number"
-                  id="tax_number"
-                  className="form-input border-slate-200 dark:border-zink-500 focus:outline-none focus:border-custom-500 disabled:bg-slate-100 dark:disabled:bg-zink-600 disabled:border-slate-300 dark:disabled:border-zink-500 dark:disabled:text-zink-200 disabled:text-slate-500 dark:text-zink-100 dark:bg-zink-700 dark:focus:border-custom-800 placeholder:text-slate-400 dark:placeholder:text-zink-200"
-                  placeholder="Tax Number"
-                  name="tax_number"
-                  onChange={validation.handleChange}
-                  value={validation.values.tax_number || ""}
-                />
-                {validation.touched.tax_number &&
-                validation.errors.tax_number ? (
-                  <p className="text-red-400">{validation.errors.tax_number}</p>
-                ) : null}
-              </div>
+
             </div>
             <div className="flex justify-end gap-2 mt-4">
               <button
@@ -612,8 +557,8 @@ const Pemasok = () => {
                 {isLoading
                   ? "Loading"
                   : !!isEdit
-                  ? "Update"
-                  : "Add Master Pemasok"}
+                    ? "Update"
+                    : "Add Barang Masuk"}
               </button>
             </div>
           </form>
@@ -623,4 +568,4 @@ const Pemasok = () => {
   );
 };
 
-export default Pemasok;
+export default SalesPage;

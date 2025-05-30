@@ -1,5 +1,4 @@
 // dashboard
-import Ecommerce from "pages/Dashboards/Ecommerce";
 
 import UserProfile from "pages/Authentication/UserProfile";
 import Login from "pages/Authentication/Login";
@@ -7,15 +6,22 @@ import Logout from "pages/Authentication/LogOut";
 import Register from "pages/Authentication/Register";
 import MasterBarang from "pages/MasterBarang";
 import MasterUser from "pages/MasterUser";
-import Pemasok from "pages/Pemasok";
-import Pelanggan from "pages/Pelanggan";
-import BarangMasukPage from "pages/BarangMasuk";
-import BarangKeluarPage from "pages/BarangKeluar";
 import ReportPerbaikanBarang from "report/ReportPemasok";
 import ReportPelanggan from "report/ReportPelanggan";
 import ReportMutasiBarang from "report/ReportMutasiBarang";
 import ReportStokBarangTersedia from "report/ReportStokBarangTersedia";
 import ReportStokBarangHabis from "report/ReportStokBarangHabis";
+import CategoryBarang from "pages/CategoryBarang";
+import Supplier from "pages/Supplier";
+import Customer from "pages/Customer";
+import PurchasePage from "pages/Purchase";
+import PurchaseItemPage from "pages/Purchase/PurchaseItem";
+import SalesPage from "pages/Sales";
+import SalesItemPage from "pages/Sales/SalesItem";
+import Employee from "pages/Employee";
+import Attendance from "pages/Attendance";
+import Payroll from "pages/Payroll";
+import Dashboard from "pages/Dashboards/Ecommerce";
 
 interface RouteObject {
   path: string;
@@ -25,17 +31,23 @@ interface RouteObject {
 
 const authProtectedRoutes: Array<RouteObject> = [
   // Dashboard
-  { path: "/", component: Ecommerce },
-  { path: "/dashboard", component: Ecommerce },
-  
+  { path: "/", component: Dashboard },
+  { path: "/dashboard", component: Dashboard },
+
   // profile
   { path: "/user-profile", component: UserProfile },
   { path: "/master-user", component: MasterUser },
+  { path: "/kategori-barang", component: CategoryBarang },
   { path: "/master-barang", component: MasterBarang },
-  { path: "/pemasok", component: Pemasok },
-  { path: "/pelanggan", component: Pelanggan },
-  { path: "/barang-masuk", component: BarangMasukPage },
-  { path: "/barang-keluar", component: BarangKeluarPage },
+  { path: "/supplier", component: Supplier },
+  { path: "/customer", component: Customer },
+  { path: "/purchase", component: PurchasePage },
+  { path: "/purchase/:id/purchase-item", component: PurchaseItemPage },
+  { path: "/sales", component: SalesPage },
+  { path: "/sales/:id/sales-item", component: SalesItemPage },
+  { path: "/employee", component: Employee },
+  { path: "/attendance", component: Attendance },
+  { path: "/payroll", component: Payroll },
   { path: "/report-pemasok", component: ReportPerbaikanBarang },
   { path: "/report-pelanggan", component: ReportPelanggan },
   { path: "/report-mutasi", component: ReportMutasiBarang },
@@ -44,12 +56,10 @@ const authProtectedRoutes: Array<RouteObject> = [
 ];
 
 const publicRoutes = [
-
   // authentication
   { path: "/login", component: Login },
   { path: "/logout", component: Logout },
   { path: "/register", component: Register },
-
-]
+];
 
 export { authProtectedRoutes, publicRoutes };

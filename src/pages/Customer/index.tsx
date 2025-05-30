@@ -3,6 +3,9 @@ import DeleteModal from "Common/DeleteModal";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import {
+  CheckCircle,
+  ImagePlus,
+  LucidePrinter,
   Pencil,
   Plus,
   Search,
@@ -15,10 +18,8 @@ import { useFormik } from "formik";
 import TableContainer from "Common/TableContainer";
 import Modal from "Common/Components/Modal";
 import { axiosInstance } from "lib/axios";
-import AsyncSelect from 'react-select/async';
 
-
-const MasterBarang = () => {
+const Customer = () => {
   const [data, setData] = useState<any>([]);
   const [eventData, setEventData] = useState<any>();
 
@@ -61,26 +62,22 @@ const MasterBarang = () => {
     initialValues: {
       id: (eventData && eventData.id) || "",
       name: (eventData && eventData.name) || "",
-      sku: (eventData && eventData.sku) || "",
-      category_id: eventData?.category_id
-        ? { label: eventData.category_id.name, value: eventData.category_id.id }
-        : null,
-      stock: (eventData && eventData.stock) || "",
-      price: (eventData && eventData.price) || "",
+      email: (eventData && eventData.email) || "",
+      phone: (eventData && eventData.phone) || "",
+      address: (eventData && eventData.address) || "",
     },
     validationSchema: Yup.object({
-      sku: Yup.string().required("SKU is Required"),
-      name: Yup.string().required("Name is Required"),
-      category_id: Yup.object().required("Category is Required"),
-      stock: Yup.string().required("Stock is Required"),
-      price: Yup.string().required("Price is Required"),
+      name: Yup.string().required("nama is Required"),
+      email: Yup.string().required("email is Required"),
+      phone: Yup.string().required("phone is Required"),
+      address: Yup.string().required("address is Required"),
     }),
 
     onSubmit: (values) => {
       if (isEdit) {
         handleUpdateSuratMasuk(values);
       } else {
-        handlePostMasterBarang(values);
+        handlePostCustomer(values);
       }
       if (isLoading) {
         toggle();
@@ -112,28 +109,23 @@ const MasterBarang = () => {
         enableColumnFilter: false,
       },
       {
-        header: "SKU",
-        accessorKey: "sku",
-        enableColumnFilter: false,
-      },
-      {
         header: "Nama",
         accessorKey: "name",
         enableColumnFilter: false,
       },
       {
-        header: "Kategori",
-        accessorKey: "category_id.name",
+        header: "Email",
+        accessorKey: "email",
         enableColumnFilter: false,
       },
       {
-        header: "Stok",
-        accessorKey: "stock",
+        header: "phone",
+        accessorKey: "phone",
         enableColumnFilter: false,
       },
       {
-        header: "Harga Satuan",
-        accessorKey: "price",
+        header: "Address",
+        accessorKey: "address",
         enableColumnFilter: false,
       },
       {
@@ -174,18 +166,14 @@ const MasterBarang = () => {
 
   const naviagate = useNavigate();
 
-  const fetchDataBarang = async () => {
+  const fetchDataCustomer = async () => {
     setLoadingV(true);
     try {
-      const userResponse = await axiosInstance.get("/products", {
+      const userResponse = await axiosInstance.get("/customers", {
         headers: {
           Authorization: `Bearer ${user.data.token}`,
         },
       });
-      console.log(
-        "🚀 ~ fetchDataUser ~ userResponse:",
-        userResponse.data.data.data
-      );
       setData(userResponse.data.data.data);
     } catch (error: any) {
       if (error.response.status === 401) {
@@ -197,17 +185,16 @@ const MasterBarang = () => {
     }
   };
 
-  const handlePostMasterBarang = async (data: any) => {
+  const handlePostCustomer = async (data: any) => {
     try {
       setIsLoading(true);
       const formData = new FormData();
       formData.append("name", data.name);
-      formData.append("sku", data.sku);
-      formData.append("category_id", data.category_id.id);
-      formData.append("stock", data.stock);
-      formData.append("price", data.price);
+      formData.append("email", data.email);
+      formData.append("address", data.address);
+      formData.append("phone", data.phone);
 
-      const userResponse = await axiosInstance.post("/products", formData, {
+      const userResponse = await axiosInstance.post("/customers", formData, {
         headers: {
           Authorization: `Bearer ${user.data.token}`,
           "Content-Type": "multipart/form-data",
@@ -215,12 +202,12 @@ const MasterBarang = () => {
       });
 
       if (userResponse.data.status === true) {
-        Success("Data Master Barang Berhasil Ditambahkan");
-        fetchDataBarang();
+        Success("Data Master Customer Berhasil Ditambahkan");
+        fetchDataCustomer();
         toggle();
       }
     } catch (error: any) {
-      Error("Data Master Barang Gagal Ditambahkan");
+      Error("Data Master Customer Gagal Ditambahkan");
       if (error.response.status === 401) {
         localStorage.removeItem("authUser");
         naviagate("/login");
@@ -228,7 +215,6 @@ const MasterBarang = () => {
     } finally {
       setIsLoading(false);
     }
-
   };
 
   const handleUpdateSuratMasuk = async (data: any) => {
@@ -236,14 +222,13 @@ const MasterBarang = () => {
       setIsLoading(true);
       const formData = new FormData();
       formData.append("name", data.name);
-      formData.append("sku", data.sku);
-      formData.append("category_id", data.category_id.id);
-      formData.append("stock", data.stock);
-      formData.append("price", data.price);
+      formData.append("email", data.email);
+      formData.append("address", data.address);
+      formData.append("phone", data.phone);
       formData.append("_method", "PUT");
 
       const userResponse = await axiosInstance.post(
-        `/products/${data.id}`,
+        `/customers/${data.id}`,
         formData,
         {
           headers: {
@@ -254,12 +239,12 @@ const MasterBarang = () => {
       );
 
       if (userResponse.data.status === true) {
-        Success("Data Master Barang Berhasil Diupdate");
-        fetchDataBarang();
+        Success("Data Master Customer Berhasil Diupdate");
+        fetchDataCustomer();
         toggle();
       }
     } catch (error: any) {
-      Error("Data Products Gagal Diupdate");
+      Error("Data Customer Masuk Gagal Diupdate");
       if (error.response.status === 401) {
         localStorage.removeItem("authUser");
         naviagate("/login");
@@ -267,22 +252,21 @@ const MasterBarang = () => {
     } finally {
       setIsLoading(false);
     }
-
   };
 
   const handleDeleteSuratMasuk = async (id: any) => {
     try {
       setIsLoading(true);
-      const userResponse = await axiosInstance.delete(`/products/${id}`, {
+      const userResponse = await axiosInstance.delete(`/customers/${id}`, {
         headers: { Authorization: `Bearer ${user.data.token}` },
       });
 
       if (userResponse.data.status === true) {
-        Success("Data Master Barang Berhasil Dihapus");
-        fetchDataBarang();
+        Success("Data Master Customer Berhasil Dihapus");
+        fetchDataCustomer();
       }
     } catch (error: any) {
-      Error("Data Products Gagal Dihapus");
+      Error("Data Customer Masuk Gagal Dihapus");
       if (error.response.status === 401) {
         localStorage.removeItem("authUser");
         naviagate("/login");
@@ -293,33 +277,8 @@ const MasterBarang = () => {
   };
 
   useEffect(() => {
-    fetchDataBarang();
+    fetchDataCustomer();
   }, []);
-
-  const [dataOptions, setDataOptions] = useState<any>([]);
-
-  const loadOptions = async (inputValue: any) => {
-    try {
-      const response = await axiosInstance.get(
-        `/product-categories?search=${inputValue}`,
-        {
-          headers: { Authorization: `Bearer ${user.data.token}` },
-        }
-
-      );
-
-      // Asumsikan API mengembalikan data seperti: [{ id: 1, name: "Gear" }, ...]
-      // API response: { data: { data: [...] } }
-      return response.data.data.data.map((item: any) => ({
-        label: item.name,
-        value: item.id,
-      }));
-      setDataOptions(response.data.data.data);
-    } catch (error) {
-      console.error("Error fetching categories:", error);
-      return [];
-    }
-  };
 
   const [loadingV, setLoadingV] = useState(false);
 
@@ -357,7 +316,7 @@ const MasterBarang = () => {
 
   return (
     <>
-      <BreadCrumb title="Master Barang" pageTitle="Master Barang" />
+      <BreadCrumb title="Master Customer" pageTitle="Master Customer" />
       <DeleteModal
         show={deleteModal}
         onHide={deleteToggle}
@@ -375,7 +334,7 @@ const MasterBarang = () => {
         <div className="card-body">
           <div className="flex items-center gap-3 mb-4">
             <h6 className="text-15 grow">
-              Master Barang (<b className="total-Employs">{data.length}</b>)
+              Master Customer (<b className="total-Employs">{data.length}</b>)
             </h6>
             <div className="shrink-0">
               <Link
@@ -386,7 +345,7 @@ const MasterBarang = () => {
                 onClick={toggle}
               >
                 <Plus className="inline-block size-4" />{" "}
-                <span className="align-middle">Add Master Barang</span>
+                <span className="align-middle">Add Master Customer</span>
               </Link>
             </div>
           </div>
@@ -440,7 +399,7 @@ const MasterBarang = () => {
           closeButtonClass="transition-all duration-200 ease-linear text-slate-400 hover:text-red-500"
         >
           <Modal.Title className="text-16">
-            {!!isEdit ? "Edit Master Barang" : "Add Master Barang"}
+            {!!isEdit ? "Edit Master Customer" : "Add Master Customer"}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body className="max-h-[calc(theme('height.screen')_-_180px)] p-4 overflow-y-auto">
@@ -484,99 +443,62 @@ const MasterBarang = () => {
               </div>
               <div className="xl:col-span-12">
                 <label
-                  htmlFor="sku"
+                  htmlFor="email"
                   className="inline-block mb-2 text-base font-medium"
                 >
-                  SKU
+                  Email
                 </label>
                 <input
                   type="text"
-                  id="sku"
+                  id="email"
                   className="form-input border-slate-200 dark:border-zink-500 focus:outline-none focus:border-custom-500 disabled:bg-slate-100 dark:disabled:bg-zink-600 disabled:border-slate-300 dark:disabled:border-zink-500 dark:disabled:text-zink-200 disabled:text-slate-500 dark:text-zink-100 dark:bg-zink-700 dark:focus:border-custom-800 placeholder:text-slate-400 dark:placeholder:text-zink-200"
-                  placeholder="SKU"
-                  name="sku"
+                  placeholder="Email"
+                  name="email"
                   onChange={validation.handleChange}
-                  value={validation.values.sku || ""}
+                  value={validation.values.email || ""}
                 />
-                {validation.touched.sku && validation.errors.sku ? (
-                  <p className="text-red-400">{validation.errors.sku}</p>
+                {validation.touched.email && validation.errors.email ? (
+                  <p className="text-red-400">{validation.errors.email}</p>
                 ) : null}
               </div>
               <div className="xl:col-span-12">
                 <label
-                  htmlFor="kategori"
+                  htmlFor="phone"
                   className="inline-block mb-2 text-base font-medium"
                 >
-                  Kategori
-                </label>
-                <AsyncSelect
-                  cacheOptions
-                  loadOptions={loadOptions}
-                  defaultOptions
-                  placeholder="Cari kategori..."
-                  isSearchable
-                  onChange={(selectedOption) => {
-                    validation.setFieldValue("category_id", {
-                      id: selectedOption?.value,
-                      name: selectedOption?.label
-                    });
-                  }}
-                  onBlur={() => validation.setFieldTouched("category_id", true)}
-                  value={
-                    validation.values.category_id
-                      ? {
-                        label: validation.values.category_id.name,
-                        value: validation.values.category_id.id,
-                      }
-                      : null
-                  }
-                />
-                {validation.touched.category_id && validation.errors.category_id ? (
-                  <p className="text-red-400">{validation.errors.category_id}</p>
-                ) : null}
-                {validation.touched.kategori && validation.errors.kategori ? (
-                  <p className="text-red-400">{validation.errors.kategori}</p>
-                ) : null}
-              </div>
-              <div className="xl:col-span-12">
-                <label
-                  htmlFor="stock"
-                  className="inline-block mb-2 text-base font-medium"
-                >
-                  Stock
+                  Phone
                 </label>
                 <input
-                  type="number"
-                  id="stock"
+                  type="tel"
+                  id="phone"
                   className="form-input border-slate-200 dark:border-zink-500 focus:outline-none focus:border-custom-500 disabled:bg-slate-100 dark:disabled:bg-zink-600 disabled:border-slate-300 dark:disabled:border-zink-500 dark:disabled:text-zink-200 disabled:text-slate-500 dark:text-zink-100 dark:bg-zink-700 dark:focus:border-custom-800 placeholder:text-slate-400 dark:placeholder:text-zink-200"
-                  placeholder="Stock"
-                  name="stock"
+                  placeholder="Phone"
+                  name="phone"
                   onChange={validation.handleChange}
-                  value={validation.values.stock || ""}
+                  value={validation.values.phone || ""}
                 />
-                {validation.touched.stock &&
-                  validation.errors.stock ? (
-                  <p className="text-red-400">{validation.errors.stock}</p>
+                {validation.touched.phone && validation.errors.phone ? (
+                  <p className="text-red-400">{validation.errors.phone}</p>
                 ) : null}
               </div>
               <div className="xl:col-span-12">
                 <label
-                  htmlFor="harga"
+                  htmlFor="address"
                   className="inline-block mb-2 text-base font-medium"
                 >
-                  Harga
+                  Address
                 </label>
                 <input
                   type="text"
-                  id="harga"
+                  id="address"
                   className="form-input border-slate-200 dark:border-zink-500 focus:outline-none focus:border-custom-500 disabled:bg-slate-100 dark:disabled:bg-zink-600 disabled:border-slate-300 dark:disabled:border-zink-500 dark:disabled:text-zink-200 disabled:text-slate-500 dark:text-zink-100 dark:bg-zink-700 dark:focus:border-custom-800 placeholder:text-slate-400 dark:placeholder:text-zink-200"
-                  placeholder="Harga"
-                  name="price"
+                  placeholder="Address"
+                  name="address"
                   onChange={validation.handleChange}
-                  value={validation.values.price || ""}
+                  value={validation.values.address || ""}
                 />
-                {validation.touched.price && validation.errors.price ? (
-                  <p className="text-red-400">{validation.errors.price}</p>
+                {validation.touched.address && validation.errors.address ? (
+                  <p className="text-red-400">{validation.errors.address}</p>
                 ) : null}
               </div>
             </div>
@@ -600,7 +522,7 @@ const MasterBarang = () => {
                   ? "Loading"
                   : !!isEdit
                     ? "Update"
-                    : "Add Master Barang"}
+                    : "Add Master Customer"}
               </button>
             </div>
           </form>
@@ -610,4 +532,4 @@ const MasterBarang = () => {
   );
 };
 
-export default MasterBarang;
+export default Customer;

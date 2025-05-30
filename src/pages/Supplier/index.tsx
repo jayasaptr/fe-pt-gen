@@ -1,8 +1,16 @@
 import BreadCrumb from "Common/BreadCrumb";
 import DeleteModal from "Common/DeleteModal";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { ToastContainer, ToastPosition, toast } from "react-toastify";
-import { Check, ImagePlus, Pencil, Plus, Search, Trash2 } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ToastContainer, toast } from "react-toastify";
+import {
+  CheckCircle,
+  ImagePlus,
+  LucidePrinter,
+  Pencil,
+  Plus,
+  Search,
+  Trash2,
+} from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 // Formik
 import * as Yup from "yup";
@@ -11,7 +19,7 @@ import TableContainer from "Common/TableContainer";
 import Modal from "Common/Components/Modal";
 import { axiosInstance } from "lib/axios";
 
-const BarangMasukPage = () => {
+const Supplier = () => {
   const [data, setData] = useState<any>([]);
   const [eventData, setEventData] = useState<any>();
 
@@ -33,7 +41,7 @@ const BarangMasukPage = () => {
 
   const handleDelete = () => {
     if (eventData) {
-      handleDeleteDataBarangMasuk(eventData.id);
+      handleDeleteSuratMasuk(eventData.id);
       setDeleteModal(false);
     }
   };
@@ -53,26 +61,23 @@ const BarangMasukPage = () => {
 
     initialValues: {
       id: (eventData && eventData.id) || "",
-      id_barang: (eventData && eventData.id_barang) || "",
-      id_pemasok: (eventData && eventData.id_pemasok) || "",
-      jumlah_masuk: (eventData && eventData.jumlah_masuk) || "",
-      harga_satuan: (eventData && eventData.harga_satuan) || "",
-      tanggal: (eventData && eventData.tanggal) || "",
+      name: (eventData && eventData.name) || "",
+      contact_person: (eventData && eventData.contact_person) || "",
+      phone: (eventData && eventData.phone) || "",
+      address: (eventData && eventData.address) || "",
     },
     validationSchema: Yup.object({
-      id_barang: Yup.string().required("Barang harus diisi!"),
-      id_pemasok: Yup.string().required("Pemasok harus diisi!"),
-      jumlah_masuk: Yup.string().required("Jumlah Masuk harus diisi!"),
-      harga_satuan: Yup.string().required("Harga Satuan harus diisi!"),
-      tanggal: Yup.string().required("Tanggal harus diisi!"),
+      name: Yup.string().required("Name is Required"),
+      contact_person: Yup.string().required("Contact Person is Required"),
+      phone: Yup.string().required("Phone is Required"),
+      address: Yup.string().required("Address is Required"),
     }),
 
     onSubmit: (values) => {
-      console.log("🚀 ~ BarangPage ~ values:", values);
       if (isEdit) {
-        handleUpdateBarangMasuk(values);
+        handleUpdateSuratMasuk(values);
       } else {
-        handlePostBarangMasuk(values);
+        handlePostSupplier(values);
       }
       if (isLoading) {
         toggle();
@@ -93,37 +98,34 @@ const BarangMasukPage = () => {
     }
   }, [show, validation]);
 
+  const printRef = useRef<HTMLDivElement>(null);
+
   // columns
   const columns = useMemo(
     () => [
       {
-        header: "Kode Barang",
-        accessorKey: "id_barang.kode",
+        header: "No",
+        accessorKey: "no",
         enableColumnFilter: false,
       },
       {
-        header: "Nama Barang",
-        accessorKey: "id_barang.nama",
+        header: "Nama",
+        accessorKey: "name",
         enableColumnFilter: false,
       },
       {
-        header: "Nama Pemasok",
-        accessorKey: "id_pemasok.nama",
+        header: "Contact Person",
+        accessorKey: "contact_person",
         enableColumnFilter: false,
       },
       {
-        header: "Jumlah Masuk",
-        accessorKey: "jumlah_masuk",
+        header: "phone",
+        accessorKey: "phone",
         enableColumnFilter: false,
       },
       {
-        header: "Harga Satuan",
-        accessorKey: "harga_satuan",
-        enableColumnFilter: false,
-      },
-      {
-        header: "Total",
-        accessorKey: "total",
+        header: "Address",
+        accessorKey: "address",
         enableColumnFilter: false,
       },
       {
@@ -131,17 +133,18 @@ const BarangMasukPage = () => {
         enableColumnFilter: false,
         enableSorting: true,
         cell: (cell: any) => (
-          <div className="flex gap-3">
-            {/* <Link
+          <div className="flex gap-2">
+            <Link
               to="#!"
               className="flex items-center justify-center size-8 transition-all duration-200 ease-linear rounded-md edit-item-btn bg-slate-100 text-slate-500 hover:text-custom-500 hover:bg-custom-100 dark:bg-zink-600 dark:text-zink-200 dark:hover:bg-custom-500/20 dark:hover:text-custom-500"
               onClick={() => {
                 const data = cell.row.original;
+
                 handleUpdateDataClick(data);
               }}
             >
               <Pencil className="size-4" />
-            </Link> */}
+            </Link>
             <Link
               to="#!"
               className="flex items-center justify-center size-8 transition-all duration-200 ease-linear rounded-md remove-item-btn bg-slate-100 text-slate-500 hover:text-custom-500 hover:bg-custom-100 dark:bg-zink-600 dark:text-zink-200 dark:hover:bg-custom-500/20 dark:hover:text-custom-500"
@@ -163,18 +166,14 @@ const BarangMasukPage = () => {
 
   const naviagate = useNavigate();
 
-  const fetchDataBarangMasuk = async () => {
+  const fetchDataSupplier = async () => {
     setLoadingV(true);
     try {
-      const userResponse = await axiosInstance.get("/barang-masuk", {
+      const userResponse = await axiosInstance.get("/suppliers", {
         headers: {
-          Authorization: `Bearer ${user.token}`,
+          Authorization: `Bearer ${user.data.token}`,
         },
       });
-      console.log(
-        "🚀 ~ fetchDataUser ~ userResponse:",
-        userResponse.data.data.data
-      );
       setData(userResponse.data.data.data);
     } catch (error: any) {
       if (error.response.status === 401) {
@@ -186,76 +185,29 @@ const BarangMasukPage = () => {
     }
   };
 
-  const [dataPemasok, setDataPemasok] = useState<any>([]);
-  const [dataBarang, setDataBarang] = useState<any>([]);
-
-  const fetchDataPemasok = async () => {
-    setLoadingV(true);
-    try {
-      const userResponse = await axiosInstance.get("/pemasok", {
-        headers: {
-          Authorization: `Bearer ${user.token}`,
-        },
-      });
-      setDataPemasok(userResponse.data.data.data);
-    } catch (error: any) {
-      if (error.response.status === 401) {
-        localStorage.removeItem("authUser");
-        naviagate("/login");
-      }
-    } finally {
-      setLoadingV(false);
-    }
-  };
-
-  const fetchDataBarang = async () => {
-    setLoadingV(true);
-    try {
-      const userResponse = await axiosInstance.get("/barang", {
-        headers: {
-          Authorization: `Bearer ${user.token}`,
-        },
-      });
-      setDataBarang(userResponse.data.data.data);
-    } catch (error: any) {
-      if (error.response.status === 401) {
-        localStorage.removeItem("authUser");
-        naviagate("/login");
-      }
-    } finally {
-      setLoadingV(false);
-    }
-  };
-
-  const handlePostBarangMasuk = async (data: any) => {
+  const handlePostSupplier = async (data: any) => {
     try {
       setIsLoading(true);
       const formData = new FormData();
-      formData.append("id_barang", data.id_barang);
-      formData.append("id_pemasok", data.id_pemasok);
-      formData.append("jumlah_masuk", data.jumlah_masuk);
-      formData.append("harga_satuan", data.harga_satuan);
-      formData.append("tanggal", data.tanggal);
-      if (user.user.role === "admin") {
-        formData.append("status", "approve");
-      } else {
-        formData.append("status", "pending");
-      }
+      formData.append("name", data.name);
+      formData.append("contact_person", data.contact_person);
+      formData.append("address", data.address);
+      formData.append("phone", data.phone);
 
-      const userResponse = await axiosInstance.post("/barang-masuk", formData, {
+      const userResponse = await axiosInstance.post("/suppliers", formData, {
         headers: {
-          Authorization: `Bearer ${user.token}`,
+          Authorization: `Bearer ${user.data.token}`,
           "Content-Type": "multipart/form-data",
         },
       });
 
       if (userResponse.data.success === true) {
-        Success("Data Barang Masuk Berhasil Ditambahkan");
-        fetchDataBarangMasuk();
+        Success("Data Master Supplier Berhasil Ditambahkan");
+        fetchDataSupplier();
         toggle();
       }
     } catch (error: any) {
-      Error("Data Barang Masuk Gagal Ditambahkan");
+      Error("Data Master Supplier Gagal Ditambahkan");
       if (error.response.status === 401) {
         localStorage.removeItem("authUser");
         naviagate("/login");
@@ -265,62 +217,34 @@ const BarangMasukPage = () => {
     }
   };
 
-  const updateStatus = async (id: number) => {
-    const formData = new FormData();
-    formData.append("status", "approve");
-    try {
-      const response = await axiosInstance.post(
-        `/barang-masuk/${id}`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${user.token}`,
-          },
-        }
-      );
-
-      if (response.data.success === true) {
-        Success("Status Barang Berhasil Diupdate");
-        fetchDataBarangMasuk();
-      }
-    } catch (error: any) {
-      Error("Status Barang Gagal Diupdate");
-      if (error.response.status === 401) {
-        localStorage.removeItem("authUser");
-        naviagate("/login");
-      }
-    }
-  };
-
-  const handleUpdateBarangMasuk = async (data: any) => {
+  const handleUpdateSuratMasuk = async (data: any) => {
     try {
       setIsLoading(true);
       const formData = new FormData();
-      formData.append("id_barang", data.id_barang);
-      formData.append("id_pemasok", data.id_pemasok);
-      formData.append("jumlah_masuk", data.jumlah_masuk);
-      formData.append("harga_satuan", data.harga_satuan);
-      formData.append("tanggal", data.tanggal);
+      formData.append("name", data.name);
+      formData.append("contact_person", data.contact_person);
+      formData.append("address", data.address);
+      formData.append("phone", data.phone);
       formData.append("_method", "PUT");
 
       const userResponse = await axiosInstance.post(
-        `/barang-masuk/${data.id}`,
+        `/suppliers/${data.id}`,
         formData,
         {
           headers: {
-            Authorization: `Bearer ${user.token}`,
+            Authorization: `Bearer ${user.data.token}`,
             "Content-Type": "multipart/form-data",
           },
         }
       );
 
       if (userResponse.data.success === true) {
-        Success("Data Barang Masuk Berhasil Diupdate");
-        fetchDataBarangMasuk();
+        Success("Data Master Supplier Berhasil Diupdate");
+        fetchDataSupplier();
         toggle();
       }
     } catch (error: any) {
-      Error("Data Barang Masuk Gagal Diupdate");
+      Error("Data Supplier Masuk Gagal Diupdate");
       if (error.response.status === 401) {
         localStorage.removeItem("authUser");
         naviagate("/login");
@@ -330,21 +254,19 @@ const BarangMasukPage = () => {
     }
   };
 
-  const handleDeleteDataBarangMasuk = async (id: any) => {
+  const handleDeleteSuratMasuk = async (id: any) => {
     try {
       setIsLoading(true);
-      const userResponse = await axiosInstance.delete(`/barang-masuk/${id}`, {
-        headers: {
-          Authorization: `Bearer ${user.token}`,
-        },
+      const userResponse = await axiosInstance.delete(`/suppliers/${id}`, {
+        headers: { Authorization: `Bearer ${user.data.token}` },
       });
 
       if (userResponse.data.success === true) {
-        Success("Data Barang Masuk Berhasil Dihapus");
-        fetchDataBarangMasuk();
+        Success("Data Master Supplier Berhasil Dihapus");
+        fetchDataSupplier();
       }
     } catch (error: any) {
-      Error("Data Barang Masuk Gagal Dihapus");
+      Error("Data Supplier Masuk Gagal Dihapus");
       if (error.response.status === 401) {
         localStorage.removeItem("authUser");
         naviagate("/login");
@@ -355,9 +277,7 @@ const BarangMasukPage = () => {
   };
 
   useEffect(() => {
-    fetchDataBarangMasuk();
-    fetchDataPemasok();
-    fetchDataBarang();
+    fetchDataSupplier();
   }, []);
 
   const [loadingV, setLoadingV] = useState(false);
@@ -368,7 +288,15 @@ const BarangMasukPage = () => {
     </div>
   );
 
-  const Success = (title: string) =>
+  // const Success = (title: string) =>
+  // toast.success(title, {
+  //   autoClose: 3000,
+  //   theme: "colored",
+  //   icon: false,
+  //   position: toast.POSITION.TOP_RIGHT,
+  //   closeButton: false,
+  // });
+  const Success = (title?: string) =>
     toast.success(title, {
       autoClose: 3000,
       theme: "colored",
@@ -388,7 +316,7 @@ const BarangMasukPage = () => {
 
   return (
     <>
-      <BreadCrumb title="Data Barang" pageTitle="Barang" />
+      <BreadCrumb title="Master Supplier" pageTitle="Master Supplier" />
       <DeleteModal
         show={deleteModal}
         onHide={deleteToggle}
@@ -406,7 +334,7 @@ const BarangMasukPage = () => {
         <div className="card-body">
           <div className="flex items-center gap-3 mb-4">
             <h6 className="text-15 grow">
-              Barang (<b className="total-Employs">{data.length}</b>)
+              Master Supplier (<b className="total-Employs">{data.length}</b>)
             </h6>
             <div className="shrink-0">
               <Link
@@ -417,7 +345,7 @@ const BarangMasukPage = () => {
                 onClick={toggle}
               >
                 <Plus className="inline-block size-4" />{" "}
-                <span className="align-middle">Add Barang Masuk</span>
+                <span className="align-middle">Add Master Supplier</span>
               </Link>
             </div>
           </div>
@@ -435,10 +363,10 @@ const BarangMasukPage = () => {
                   data={data || []}
                   customPageSize={5}
                   divclassName="-mx-5 overflow-x-auto"
-                  tableclassName="w-full whitespace-nowrap"
+                  tableclassName="w-full table-fixed"
                   theadclassName="ltr:text-left rtl:text-right bg-slate-100 dark:bg-zink-600"
                   thclassName="px-3.5 py-2.5 first:pl-5 last:pr-5 font-semibold border-b border-slate-200 dark:border-zink-500"
-                  tdclassName="px-3.5 py-2.5 first:pl-5 last:pr-5 border-y border-slate-200 dark:border-zink-500"
+                  tdclassName="px-3.5 py-2.5 first:pl-5 last:pr-5 border-y border-slate-200 dark:border-zink-500 overflow-hidden text-ellipsis whitespace-nowrap"
                   PaginationClassName="flex flex-col items-center gap-4 px-4 mt-4 md:flex-row"
                 />
               ))
@@ -471,7 +399,7 @@ const BarangMasukPage = () => {
           closeButtonClass="transition-all duration-200 ease-linear text-slate-400 hover:text-red-500"
         >
           <Modal.Title className="text-16">
-            {!!isEdit ? "Edit Barang" : "Add Barang Masuk"}
+            {!!isEdit ? "Edit Master Supplier" : "Add Master Supplier"}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body className="max-h-[calc(theme('height.screen')_-_180px)] p-4 overflow-y-auto">
@@ -495,135 +423,82 @@ const BarangMasukPage = () => {
             <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
               <div className="xl:col-span-12">
                 <label
-                  htmlFor="id_barang"
+                  htmlFor="name"
                   className="inline-block mb-2 text-base font-medium"
                 >
-                  Barang
-                </label>
-                <select
-                  id="id_barang"
-                  className="form-select border-slate-200 dark:border-zink-500 focus:outline-none focus:border-custom-500 disabled:bg-slate-100 dark:disabled:bg-zink-600 disabled:border-slate-300 dark:disabled:border-zink-500 dark:disabled:text-zink-200 disabled:text-slate-500 dark:text-zink-100 dark:bg-zink-700 dark:focus:border-custom-800 placeholder:text-slate-400 dark:placeholder:text-zink-200"
-                  name="id_barang"
-                  onChange={(e) => {
-                    validation.handleChange(e);
-                    validation.setFieldValue("id_barang", e.target.value);
-                  }}
-                  onBlur={validation.handleBlur}
-                  value={
-                    validation.values.id_barang ||
-                    (eventData && eventData.id_barang) ||
-                    ""
-                  }
-                >
-                  <option value="">Pilih Barang</option>
-                  {dataBarang.map((item: any, index: number) => (
-                    <option key={index} value={item.id}>
-                      {item.nama}
-                    </option>
-                  ))}
-                </select>
-                {validation.touched.id_barang && validation.errors.id_barang ? (
-                  <p className="text-red-400">{validation.errors.id_barang}</p>
-                ) : null}
-              </div>
-              <div className="xl:col-span-12">
-                <label
-                  htmlFor="id_pemasok"
-                  className="inline-block mb-2 text-base font-medium"
-                >
-                  Pemasok
-                </label>
-                <select
-                  id="id_pemasok"
-                  className="form-select border-slate-200 dark:border-zink-500 focus:outline-none focus:border-custom-500 disabled:bg-slate-100 dark:disabled:bg-zink-600 disabled:border-slate-300 dark:disabled:border-zink-500 dark:disabled:text-zink-200 disabled:text-slate-500 dark:text-zink-100 dark:bg-zink-700 dark:focus:border-custom-800 placeholder:text-slate-400 dark:placeholder:text-zink-200"
-                  name="id_pemasok"
-                  onChange={(e) => {
-                    validation.handleChange(e);
-                    validation.setFieldValue("id_pemasok", e.target.value);
-                  }}
-                  onBlur={validation.handleBlur}
-                  value={
-                    validation.values.id_pemasok ||
-                    (eventData && eventData.id_pemasok) ||
-                    ""
-                  }
-                >
-                  <option value="">Pilih Pemasok</option>
-                  {dataPemasok.map((item: any, index: number) => (
-                    <option key={index} value={item.id}>
-                      {item.nama}
-                    </option>
-                  ))}
-                </select>
-                {validation.touched.id_pemasok &&
-                  validation.errors.id_pemasok ? (
-                  <p className="text-red-400">{validation.errors.id_pemasok}</p>
-                ) : null}
-              </div>
-              <div className="xl:col-span-12">
-                <label
-                  htmlFor="jumlah_masuk"
-                  className="inline-block mb-2 text-base font-medium"
-                >
-                  Jumlah Masuk
+                  Nama
                 </label>
                 <input
-                  type="number"
-                  id="jumlah_masuk"
+                  type="text"
+                  id="name"
                   className="form-input border-slate-200 dark:border-zink-500 focus:outline-none focus:border-custom-500 disabled:bg-slate-100 dark:disabled:bg-zink-600 disabled:border-slate-300 dark:disabled:border-zink-500 dark:disabled:text-zink-200 disabled:text-slate-500 dark:text-zink-100 dark:bg-zink-700 dark:focus:border-custom-800 placeholder:text-slate-400 dark:placeholder:text-zink-200"
-                  placeholder="Jumlah Masuk"
-                  name="jumlah_masuk"
+                  placeholder="Nama"
+                  name="name"
                   onChange={validation.handleChange}
-                  value={validation.values.jumlah_masuk || ""}
+                  value={validation.values.name || ""}
                 />
-                {validation.touched.jumlah_masuk &&
-                  validation.errors.jumlah_masuk ? (
-                  <p className="text-red-400">
-                    {validation.errors.jumlah_masuk}
-                  </p>
+                {validation.touched.name && validation.errors.name ? (
+                  <p className="text-red-400">{validation.errors.name}</p>
                 ) : null}
               </div>
               <div className="xl:col-span-12">
                 <label
-                  htmlFor="harga_satuan"
+                  htmlFor="contact_person"
                   className="inline-block mb-2 text-base font-medium"
                 >
-                  Harga Satuan
+                  Contact Person
                 </label>
                 <input
-                  type="number"
-                  id="harga_satuan"
+                  type="text"
+                  id="contact_person"
                   className="form-input border-slate-200 dark:border-zink-500 focus:outline-none focus:border-custom-500 disabled:bg-slate-100 dark:disabled:bg-zink-600 disabled:border-slate-300 dark:disabled:border-zink-500 dark:disabled:text-zink-200 disabled:text-slate-500 dark:text-zink-100 dark:bg-zink-700 dark:focus:border-custom-800 placeholder:text-slate-400 dark:placeholder:text-zink-200"
-                  placeholder="Harga Satuan"
-                  name="harga_satuan"
+                  placeholder="Contact Person"
+                  name="contact_person"
                   onChange={validation.handleChange}
-                  value={validation.values.harga_satuan || ""}
+                  value={validation.values.contact_person || ""}
                 />
-                {validation.touched.harga_satuan &&
-                  validation.errors.harga_satuan ? (
-                  <p className="text-red-400">
-                    {validation.errors.harga_satuan}
-                  </p>
+                {validation.touched.contact_person && validation.errors.contact_person ? (
+                  <p className="text-red-400">{validation.errors.contact_person}</p>
                 ) : null}
               </div>
               <div className="xl:col-span-12">
                 <label
-                  htmlFor="tanggal"
-                  className="inline-block mb-2 text-balance font-medium"
+                  htmlFor="phone"
+                  className="inline-block mb-2 text-base font-medium"
                 >
-                  Tanggal
+                  Phone
                 </label>
                 <input
-                  type="date"
-                  id="tanggal"
+                  type="tel"
+                  id="phone"
                   className="form-input border-slate-200 dark:border-zink-500 focus:outline-none focus:border-custom-500 disabled:bg-slate-100 dark:disabled:bg-zink-600 disabled:border-slate-300 dark:disabled:border-zink-500 dark:disabled:text-zink-200 disabled:text-slate-500 dark:text-zink-100 dark:bg-zink-700 dark:focus:border-custom-800 placeholder:text-slate-400 dark:placeholder:text-zink-200"
-                  placeholder="Tanggal "
-                  name="tanggal"
+                  placeholder="Phone"
+                  name="phone"
                   onChange={validation.handleChange}
-                  value={validation.values.tanggal || ""}
+                  value={validation.values.phone || ""}
                 />
-                {validation.touched.tanggal && validation.errors.tanggal ? (
-                  <p className="text-red-400">{validation.errors.tanggal}</p>
+                {validation.touched.phone && validation.errors.phone ? (
+                  <p className="text-red-400">{validation.errors.phone}</p>
+                ) : null}
+              </div>
+              <div className="xl:col-span-12">
+                <label
+                  htmlFor="address"
+                  className="inline-block mb-2 text-base font-medium"
+                >
+                  Address
+                </label>
+                <input
+                  type="text"
+                  id="address"
+                  className="form-input border-slate-200 dark:border-zink-500 focus:outline-none focus:border-custom-500 disabled:bg-slate-100 dark:disabled:bg-zink-600 disabled:border-slate-300 dark:disabled:border-zink-500 dark:disabled:text-zink-200 disabled:text-slate-500 dark:text-zink-100 dark:bg-zink-700 dark:focus:border-custom-800 placeholder:text-slate-400 dark:placeholder:text-zink-200"
+                  placeholder="Address"
+                  name="address"
+                  onChange={validation.handleChange}
+                  value={validation.values.address || ""}
+                />
+                {validation.touched.address && validation.errors.address ? (
+                  <p className="text-red-400">{validation.errors.address}</p>
                 ) : null}
               </div>
             </div>
@@ -647,7 +522,7 @@ const BarangMasukPage = () => {
                   ? "Loading"
                   : !!isEdit
                     ? "Update"
-                    : "Add Barang Masuk"}
+                    : "Add Master Supplier"}
               </button>
             </div>
           </form>
@@ -657,4 +532,4 @@ const BarangMasukPage = () => {
   );
 };
 
-export default BarangMasukPage;
+export default Supplier;

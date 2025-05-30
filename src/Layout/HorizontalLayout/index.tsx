@@ -4,6 +4,7 @@ import { Dropdown } from "Common/Components/SideBarDropdown";
 import { Link } from "react-router-dom";
 
 import { menuData } from "../LayoutMenuData";
+import { menuDataUser } from "../LayoutMenuDataUser";
 import withRouter from "Common/withRouter";
 
 //i18n
@@ -12,8 +13,11 @@ import { Network } from "lucide-react";
 
 const HorizontalLayout = (props: any) => {
   const path = props.router.location.pathname;
+  const user = JSON.parse(localStorage.getItem("authUser")!);
 
-  const [menuItems, setMenuItems] = React.useState<any>(menuData);
+  const [menuItems, setMenuItems] = React.useState<any>(
+    user && user.data.user.role === "user" ? menuDataUser : menuData
+  );
 
   React.useEffect(() => {
     const handleResize = () => {

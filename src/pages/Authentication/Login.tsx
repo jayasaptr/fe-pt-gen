@@ -53,6 +53,7 @@ const Login = (props: any) => {
     setLoading(true);
     try {
       const userReponse = await axiosInstance.post("/login", values);
+      console.log("🚀 ~ handleLogin ~ userReponse:", userReponse)
 
       setSuccess(true);
 
