@@ -6,6 +6,8 @@ import { CalendarDays } from 'lucide-react';
 import { axiosInstance } from 'lib/axios';
 import { useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
+import TopSellingProducts from './TopSellingProducts';
+import SalesMonth from './SalesMonth';
 
 
 const Dashboard = () => {
@@ -13,17 +15,32 @@ const Dashboard = () => {
   const [loadingV, setLoadingV] = useState(false);
   const [data, setData] = useState<any>();
   const naviagate = useNavigate();
+  const [filter, setFilter] = useState<String>("yearly")
 
   const fetchDataDashboard = async () => {
     setLoadingV(true);
     try {
 
-      const userResponse = await axiosInstance.get("/dashboard", {
-        headers: {
-          Authorization: `Bearer ${user.data.token}`,
-        },
-      });
-      console.log("🚀 ~ fetchDataDashboard ~ userResponse:", userResponse.data)
+      let userResponse;
+
+      if (user.data.user.role === "user") {
+        userResponse = await axiosInstance.get("/dashboard", {
+          headers: {
+            Authorization: `Bearer ${user.data.token}`,
+          },
+        });
+        console.log("🚀 ~ fetchDataDashboard ~ userResponse:", userResponse.data)
+      } else {
+        userResponse = await axiosInstance.get("/dashboard-admin", {
+          headers: {
+            Authorization: `Bearer ${user.data.token}`,
+          },
+          params: {
+            filter: filter
+          }
+        });
+        console.log("🚀 ~ fetchDataDashboard ~ userResponse:", userResponse.data)
+      }
       setData(userResponse.data);
     } catch (error: any) {
       if (error.response.status === 401) {
@@ -165,6 +182,14 @@ const Dashboard = () => {
           </div>
         </div>
       )}
+      {
+        user.data.user.role === "admin" && (
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-12">
+            <TopSellingProducts data={data} />
+            <SalesMonth data={data} />
+          </div>
+        )
+      }
     </React.Fragment>
   );
 };

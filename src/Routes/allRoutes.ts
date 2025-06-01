@@ -21,7 +21,7 @@ import SalesItemPage from "pages/Sales/SalesItem";
 import Employee from "pages/Employee";
 import Attendance from "pages/Attendance";
 import Payroll from "pages/Payroll";
-import Dashboard from "pages/Dashboards/Ecommerce";
+import Dashboard from "pages/Dashboards";
 
 interface RouteObject {
   path: string;

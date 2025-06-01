@@ -210,11 +210,23 @@ const Payroll = () => {
     const fetchDataPayroll = async () => {
         setLoadingV(true);
         try {
-            const userResponse = await axiosInstance.get("/payroll", {
-                headers: {
-                    Authorization: `Bearer ${user.data.token}`,
-                },
-            });
+            let userResponse
+            if (user.data.user.role === "admin") {
+                userResponse = await axiosInstance.get("/payroll", {
+                    headers: {
+                        Authorization: `Bearer ${user.data.token}`,
+                    },
+                });
+            } else {
+                userResponse = await axiosInstance.get("/payroll", {
+                    headers: {
+                        Authorization: `Bearer ${user.data.token}`,
+                    },
+                    params: {
+                        employee_id: user.data.user.employee_id
+                    }
+                });
+            }
             setData(userResponse.data.data.data);
         } catch (error: any) {
             if (error.response.status === 401) {

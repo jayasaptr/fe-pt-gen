@@ -462,6 +462,12 @@ const PurchaseItemPage = () => {
                                     onChange={(e) => {
                                         validation.handleChange(e);
                                         validation.setFieldValue("product_id", e.target.value);
+                                        const selectedProduct = dataBarang.find(
+                                            (item: any) => item.id === Number(e.target.value)
+                                        );
+                                        if (selectedProduct) {
+                                            validation.setFieldValue("price", selectedProduct.price);
+                                        }
                                     }}
                                     onBlur={validation.handleBlur}
                                     value={
