@@ -11,12 +11,11 @@ import ReportPrint from "./print/ReportPrint";
 import ReactToPrint from "react-to-print";
 import { Search } from "lucide-react";
 
-const ReportStokBarangTersedia = () => {
+const ReportAbsensi = () => {
     const [showDateFilter, setShowDateFilter] = useState(false);
 
     const columns: column[] = React.useMemo(
         () => [
-            // no
             {
                 header: "No",
                 accessorKey: "no",
@@ -26,13 +25,25 @@ const ReportStokBarangTersedia = () => {
             },
             {
                 header: "Nama",
-                accessorKey: "name",
+                accessorKey: "employee_id.name",
                 enableColumnFilter: false,
                 enableSorting: true,
             },
             {
-                header: "Stock",
-                accessorKey: "stock",
+                header: "Tanggal",
+                accessorKey: "date",
+                enableColumnFilter: false,
+                enableSorting: true,
+            },
+            {
+                header: "Jam Masuk",
+                accessorKey: "check_in_time",
+                enableColumnFilter: false,
+                enableSorting: true,
+            },
+            {
+                header: "Jam Keluar",
+                accessorKey: "check_out_time",
                 enableColumnFilter: false,
                 enableSorting: true,
             },
@@ -57,7 +68,7 @@ const ReportStokBarangTersedia = () => {
     const fetchDataBarangMasuk = async () => {
         setLoadingV(true);
         try {
-            const userResponse = await axiosInstance.get("/report/barang-tersedia", {
+            const userResponse = await axiosInstance.get("/report/attendance", {
                 headers: {
                     Authorization: `Bearer ${user.data.token}`,
                 },
@@ -69,7 +80,7 @@ const ReportStokBarangTersedia = () => {
                     search: search
                 },
             });
-            setData(userResponse.data.data);
+            setData(userResponse.data.data.data);
         } catch (error: any) {
             if (error.response.status === 401) {
                 localStorage.removeItem("authUser");
@@ -95,8 +106,8 @@ const ReportStokBarangTersedia = () => {
     return (
         <>
             <BreadCrumb
-                title="Report Barang Tersedia"
-                pageTitle="Report Barang Tersedia"
+                title="Report Karyawan"
+                pageTitle="Report Karyawan"
             />
             <div className="card">
                 <div className="card-body">
@@ -200,7 +211,7 @@ const ReportStokBarangTersedia = () => {
             </div>
 
             <div style={{ display: "none" }}>
-                <ReportPrint ref={printRef} title="Report Barang Tersedia">
+                <ReportPrint ref={printRef} title="Report Karyawan">
                     <TableContainer
                         isPagination={false}
                         isTfoot={false}
@@ -231,4 +242,4 @@ const ReportStokBarangTersedia = () => {
     );
 };
 
-export default ReportStokBarangTersedia;
+export default ReportAbsensi;

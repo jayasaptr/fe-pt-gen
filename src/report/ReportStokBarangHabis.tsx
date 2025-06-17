@@ -17,26 +17,21 @@ const ReportStokBarangHabis = () => {
     const columns: column[] = React.useMemo(
         () => [
             {
+                header: "No",
+                accessorKey: "no",
+                enableColumnFilter: false,
+                enableSorting: false,
+                cell: (info: any) => info.row.index + 1,
+            },
+            {
                 header: "Nama",
-                accessorKey: "id_barang.nama",
+                accessorKey: "name",
                 enableColumnFilter: false,
                 enableSorting: true,
             },
             {
-                header: "Kategori",
-                accessorKey: "id_barang.kategori",
-                enableColumnFilter: false,
-                enableSorting: true,
-            },
-            {
-                header: "Harga Jual",
-                accessorKey: "id_barang.harga_jual",
-                enableColumnFilter: false,
-                enableSorting: true,
-            },
-            {
-                header: "Stock Akhir",
-                accessorKey: "stok_akhir",
+                header: "Stock",
+                accessorKey: "stock",
                 enableColumnFilter: false,
                 enableSorting: true,
             },
@@ -61,20 +56,19 @@ const ReportStokBarangHabis = () => {
     const fetchDataBarangMasuk = async () => {
         setLoadingV(true);
         try {
-            const userResponse = await axiosInstance.get("/report-stok", {
+            const userResponse = await axiosInstance.get("/report/barang-terjual", {
                 headers: {
-                    Authorization: `Bearer ${user.token}`,
+                    Authorization: `Bearer ${user.data.token}`,
                 },
                 params: {
                     // start_date: startDate,
                     // end_date: endDate,
                     // status: idKondisi,
                     // category: "barang",
-                    stock_akhir: 0,
                     search: search
                 },
             });
-            setData(userResponse.data.data.data);
+            setData(userResponse.data.data);
         } catch (error: any) {
             if (error.response.status === 401) {
                 localStorage.removeItem("authUser");

@@ -24,3 +24,9 @@ File: tailwind scss File
    animation-iteration-count: 2;
    stroke-dasharray: 10;
 }
+
+@media print {
+  .action-column {
+    display: none;
+  }
+}

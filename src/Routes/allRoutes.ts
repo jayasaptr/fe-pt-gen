@@ -22,6 +22,12 @@ import Employee from "pages/Employee";
 import Attendance from "pages/Attendance";
 import Payroll from "pages/Payroll";
 import Dashboard from "pages/Dashboards";
+import ReportPembelian from "report/ReportPembelian";
+import ReportPenjualan from "report/ReportPenjualan";
+import ReportKaryawan from "report/ReportKaryawan";
+import ReportAbsensi from "report/ReportAbsensi";
+import ReportPayroll from "report/ReportPayroll";
+import ReportStockMovement from "report/ReportStockMovement";
 
 interface RouteObject {
   path: string;
@@ -53,6 +59,12 @@ const authProtectedRoutes: Array<RouteObject> = [
   { path: "/report-mutasi", component: ReportMutasiBarang },
   { path: "/report-barang-tersedia", component: ReportStokBarangTersedia },
   { path: "/report-barang-habis", component: ReportStokBarangHabis },
+  { path: "/report-pembelian", component: ReportPembelian },
+  { path: "/report-penjualan", component: ReportPenjualan },
+  { path: "/report-employee", component: ReportKaryawan },
+  { path: "/report-absensi", component: ReportAbsensi },
+  { path: "/report-payroll", component: ReportPayroll },
+  { path: "/report-stock-movements", component: ReportStockMovement },
 ];
 
 const publicRoutes = [

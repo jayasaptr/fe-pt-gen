@@ -55,7 +55,7 @@ const ReportPrint = forwardRef<HTMLDivElement, ReportPrintProps>(
                   className="mx-auto h-32"
                 />
               </div> */}
-              <p className="mt-4 font-bold">Ferry</p>
+              <p className="mt-16 font-bold">Ferry</p>
             </div>
           </div>
         </div>

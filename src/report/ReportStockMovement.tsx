@@ -11,12 +11,11 @@ import ReportPrint from "./print/ReportPrint";
 import ReactToPrint from "react-to-print";
 import { Search } from "lucide-react";
 
-const ReportStokBarangTersedia = () => {
+const ReportStockMovement = () => {
     const [showDateFilter, setShowDateFilter] = useState(false);
 
     const columns: column[] = React.useMemo(
         () => [
-            // no
             {
                 header: "No",
                 accessorKey: "no",
@@ -26,13 +25,25 @@ const ReportStokBarangTersedia = () => {
             },
             {
                 header: "Nama",
-                accessorKey: "name",
+                accessorKey: "product_name",
                 enableColumnFilter: false,
                 enableSorting: true,
             },
             {
-                header: "Stock",
-                accessorKey: "stock",
+                header: "Tipe",
+                accessorKey: "type",
+                enableColumnFilter: false,
+                enableSorting: true,
+            },
+            {
+                header: "Quantity",
+                accessorKey: "quantity",
+                enableColumnFilter: false,
+                enableSorting: true,
+            },
+            {
+                header: "Tanggal",
+                accessorKey: "created_at",
                 enableColumnFilter: false,
                 enableSorting: true,
             },
@@ -57,7 +68,7 @@ const ReportStokBarangTersedia = () => {
     const fetchDataBarangMasuk = async () => {
         setLoadingV(true);
         try {
-            const userResponse = await axiosInstance.get("/report/barang-tersedia", {
+            const userResponse = await axiosInstance.get("/report/stock-movement", {
                 headers: {
                     Authorization: `Bearer ${user.data.token}`,
                 },
@@ -95,8 +106,8 @@ const ReportStokBarangTersedia = () => {
     return (
         <>
             <BreadCrumb
-                title="Report Barang Tersedia"
-                pageTitle="Report Barang Tersedia"
+                title="Report Stock Movement"
+                pageTitle="Report Stock Movement"
             />
             <div className="card">
                 <div className="card-body">
@@ -200,7 +211,7 @@ const ReportStokBarangTersedia = () => {
             </div>
 
             <div style={{ display: "none" }}>
-                <ReportPrint ref={printRef} title="Report Barang Tersedia">
+                <ReportPrint ref={printRef} title="Report Stock Movement">
                     <TableContainer
                         isPagination={false}
                         isTfoot={false}
@@ -231,4 +242,4 @@ const ReportStokBarangTersedia = () => {
     );
 };
 
-export default ReportStokBarangTersedia;
+export default ReportStockMovement;

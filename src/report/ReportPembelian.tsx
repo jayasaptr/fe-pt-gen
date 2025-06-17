@@ -8,11 +8,25 @@ import { axiosInstance } from "lib/axios";
 import { useNavigate } from "react-router-dom";
 import Flatpickr from "react-flatpickr";
 import ReportPrint from "./print/ReportPrint";
-import ReactToPrint from "react-to-print";
-import { Search } from "lucide-react";
+import ReactToPrint, { useReactToPrint } from "react-to-print";
+import { Printer, Search } from "lucide-react";
+import ReportPrintDetail from "./print/ReportPrintDetail";
 
-const ReportStokBarangTersedia = () => {
+const ReportPembelian = () => {
     const [showDateFilter, setShowDateFilter] = useState(false);
+    const [selectedDetail, setSelectedDetail] = useState<any>(null);
+
+    const handleDetailPrint = useReactToPrint({
+        content: () => printRefDetail.current,
+        onAfterPrint: () => {
+            console.log("Print completed");
+        },
+        onBeforeGetContent: () => {
+            console.log("Preparing to print detail");
+        },
+    });
+
+
 
     const columns: column[] = React.useMemo(
         () => [
@@ -25,20 +39,128 @@ const ReportStokBarangTersedia = () => {
                 cell: (info: any) => info.row.index + 1,
             },
             {
-                header: "Nama",
-                accessorKey: "name",
+                header: "Supplier",
+                accessorKey: "supplier",
                 enableColumnFilter: false,
                 enableSorting: true,
             },
             {
-                header: "Stock",
-                accessorKey: "stock",
+                header: "Tanggal",
+                accessorKey: "date",
                 enableColumnFilter: false,
                 enableSorting: true,
+            },
+            {
+                header: "Total Harga",
+                accessorKey: "total",
+                enableColumnFilter: false,
+                enableSorting: true,
+            },
+            {
+                header: () => <span className="action-column">Action</span>,
+                accessorKey: "action",
+                enableColumnFilter: false,
+                enableSorting: true,
+                cell: (cell: any) => (
+                    <div className="flex gap-3 action-column">
+                        {/* action print */}
+                        {/* <ReactToPrint
+                            trigger={() => (
+                                <button
+                                    className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-2 rounded"
+                                    title="Print"
+                                    onClick={() => {
+                                        console.log("cell.row.original", cell.row.original)
+                                        setSelectedDetail(cell.row.original)
+                                    }}
+                                >
+                                    <Printer />
+                                </button>
+                            )}
+                            content={() => printRefDetail.current}
+                        /> */}
+                        <button
+                            className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-2 rounded"
+                            title="Print"
+                            onClick={() => {
+                                console.log("cell.row.original", cell.row.original)
+                                setSelectedDetail(cell.row.original);
+                                setTimeout(() => {
+                                    handleDetailPrint();
+                                }, 100);
+                            }}
+                        >
+                            <Printer />
+                        </button>
+                    </div>
+                ),
             },
         ],
         []
     );
+
+    const [dataDetail, setDataDetail] = useState([]);
+
+    const columnsDetail: column[] = React.useMemo(
+        () => [
+            // no
+            {
+                header: "No",
+                accessorKey: "no",
+                enableColumnFilter: false,
+                enableSorting: false,
+                cell: (info: any) => info.row.index + 1,
+            },
+            {
+                header: "Supplier",
+                accessorKey: "supplier",
+                enableColumnFilter: false,
+                enableSorting: true,
+            },
+            {
+                header: "Tanggal",
+                accessorKey: "date",
+                enableColumnFilter: false,
+                enableSorting: true,
+            },
+            {
+                header: "Total Harga",
+                accessorKey: "total",
+                enableColumnFilter: false,
+                enableSorting: true,
+            },
+            {
+                header: () => <span className="action-column">Action</span>,
+                accessorKey: "action",
+                enableColumnFilter: false,
+                enableSorting: true,
+                cell: (cell: any) => (
+                    <div className="flex gap-3 action-column">
+                        {/* action print */}
+                        <ReactToPrint
+                            trigger={() => (
+                                <button
+                                    className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-2 rounded"
+                                    title="Print"
+                                    onClick={() => {
+
+                                        console.log("cell.row.original", cell.row.original)
+                                        setDataDetail(cell.row.original)
+                                    }}
+                                >
+                                    <Printer />
+                                </button>
+                            )}
+                            content={() => printRefDetail.current}
+                        />
+                    </div>
+                ),
+            },
+        ],
+        []
+    );
+
+
 
     const user = JSON.parse(localStorage.getItem("authUser")!);
 
@@ -57,7 +179,7 @@ const ReportStokBarangTersedia = () => {
     const fetchDataBarangMasuk = async () => {
         setLoadingV(true);
         try {
-            const userResponse = await axiosInstance.get("/report/barang-tersedia", {
+            const userResponse = await axiosInstance.get("/report/pembelian", {
                 headers: {
                     Authorization: `Bearer ${user.data.token}`,
                 },
@@ -69,7 +191,13 @@ const ReportStokBarangTersedia = () => {
                     search: search
                 },
             });
+            const normalizedData = userResponse.data.data.map((row: any) => ({
+                ...row,
+                items: Array.isArray(row.items) ? row.items : Object.values(row.items)
+            }));
+            console.log("normalizedData", normalizedData);
             setData(userResponse.data.data);
+            setDataDetail(normalizedData);
         } catch (error: any) {
             if (error.response.status === 401) {
                 localStorage.removeItem("authUser");
@@ -81,6 +209,7 @@ const ReportStokBarangTersedia = () => {
     };
 
     const printRef = useRef<HTMLDivElement>(null);
+    const printRefDetail = useRef<HTMLDivElement>(null);
 
     const loadingView = (
         <div className="flex flex-wrap items-center gap-5 px-3 py-2 justify-center">
@@ -95,8 +224,8 @@ const ReportStokBarangTersedia = () => {
     return (
         <>
             <BreadCrumb
-                title="Report Barang Tersedia"
-                pageTitle="Report Barang Tersedia"
+                title="Report Pembelian"
+                pageTitle="Report Pembelian"
             />
             <div className="card">
                 <div className="card-body">
@@ -200,7 +329,7 @@ const ReportStokBarangTersedia = () => {
             </div>
 
             <div style={{ display: "none" }}>
-                <ReportPrint ref={printRef} title="Report Barang Tersedia">
+                <ReportPrint ref={printRef} title="Report Pembelian">
                     <TableContainer
                         isPagination={false}
                         isTfoot={false}
@@ -226,9 +355,72 @@ const ReportStokBarangTersedia = () => {
                         PaginationClassName="flex flex-col items-center mt-5 md:flex-row"
                     />
                 </ReportPrint>
+                <ReportPrintDetail ref={printRefDetail} title="Report Pembelian Detail">
+                    <div className="my-4 border-b py-2">
+                        <div className="flex justify-between">
+                            <div>
+                                <p><strong>Supplier:</strong> {selectedDetail?.supplier || ''}</p>
+                                <p><strong>Tanggal:</strong> {selectedDetail?.date || ''}</p>
+                            </div>
+                            <div>
+                                <p><strong>Total Pembelian:</strong> {selectedDetail?.total || ''}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <TableContainer
+                        isPagination={false}
+                        isTfoot={false}
+                        isSelect={false}
+                        isGlobalFilter={false}
+
+                        columns={[
+                            {
+                                header: "No",
+                                accessorKey: "no",
+                                accessorFn: (row: any, index: number) => index + 1, // Gunakan accessorFn
+                                cell: (info: any) => info.getValue(), // Ambil nilai dari accessorFn
+                                enableSorting: true,
+                                enableColumnFilter: false,
+                            },
+                            {
+                                header: "Nama Produk",
+                                accessorKey: "product_name",
+                                enableSorting: true,
+                                enableColumnFilter: false,
+                            },
+                            {
+                                header: "Jumlah",
+                                accessorKey: "quantity",
+                                enableSorting: true,
+                                enableColumnFilter: false,
+                            },
+                            {
+                                header: "Harga",
+                                accessorKey: "price",
+                                enableSorting: true,
+                                enableColumnFilter: false,
+                            },
+                            {
+                                header: "Total",
+                                accessorKey: "total",
+                                enableSorting: true,
+                                enableColumnFilter: false,
+                            },
+                        ]}
+                        data={selectedDetail?.items || []}
+                        divclassName="my-2 col-span-12 overflow-x-auto lg:col-span-12 border border-gray-300"
+                        tableclassName="display dataTable w-full text-sm align-middle whitespace-nowrap"
+                        theadclassName="border-b border-slate-200 dark:border-zink-500"
+                        trclassName="group-[.stripe]:even:bg-slate-50 group-[.stripe]:dark:even:bg-zink-600 transition-all duration-150 ease-linear group-[.hover]:hover:bg-slate-50 dark:group-[.hover]:hover:bg-zink-600 [&.selected]:bg-custom-500 dark:[&.selected]:bg-custom-500 [&.selected]:text-custom-50 dark:[&.selected]:text-custom-50"
+                        thclassName="p-3 group-[.bordered]:border group-[.bordered]:border-slate-200 group-[.bordered]:dark:border-zink-500 sorting px-3 py-4 text-slate-900 bg-slate-200/50 font-semibold text-left dark:text-zink-50 dark:bg-zink-600 dark:group-[.bordered]:border-zink-500"
+                        tdclassName="p-3 group-[.bordered]:border group-[.bordered]:border-slate-200 group-[.bordered]:dark:border-zink-500"
+                        PaginationClassName="flex flex-col items-center mt-5 md:flex-row"
+                    />
+
+                </ReportPrintDetail>
             </div>
         </>
     );
 };
 
-export default ReportStokBarangTersedia;
+export default ReportPembelian;

@@ -55,12 +55,12 @@ const PurchasePage = () => {
       id: (eventData && eventData.id) || "",
       supplier_id: (eventData && eventData.supplier_id) || "",
       purchase_date: (eventData && eventData.purchase_date) || "",
-      total_amount: (eventData && eventData.total_amount) || "",
+      // total_amount: (eventData && eventData.total_amount) || "",
     },
     validationSchema: Yup.object({
       supplier_id: Yup.string().required("Pemasok harus diisi!"),
       purchase_date: Yup.string().required("Tanggal harus diisi!"),
-      total_amount: Yup.string().required("Total Biaya harus diisi!"),
+      // total_amount: Yup.string().required("Total Biaya harus diisi!"),
     }),
 
     onSubmit: (values) => {
@@ -204,7 +204,7 @@ const PurchasePage = () => {
       const formData = new FormData();
       formData.append("supplier_id", data.supplier_id);
       formData.append("purchase_date", data.purchase_date);
-      formData.append("total_amount", data.total_amount);
+      formData.append("total_amount", "0");
       if (user.data.user.role === "admin") {
         formData.append("status", "received");
       } else {
@@ -515,7 +515,7 @@ const PurchasePage = () => {
                   <p className="text-red-400">{validation.errors.purchase_date}</p>
                 ) : null}
               </div>
-              <div className="xl:col-span-12">
+              {/* <div className="xl:col-span-12">
                 <label
                   htmlFor="total_amount"
                   className="inline-block mb-2 text-base font-medium"
@@ -537,7 +537,7 @@ const PurchasePage = () => {
                     {validation.errors.total_amount}
                   </p>
                 ) : null}
-              </div>
+              </div> */}
 
             </div>
             <div className="flex justify-end gap-2 mt-4">

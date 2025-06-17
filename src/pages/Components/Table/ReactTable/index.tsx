@@ -7,7 +7,7 @@ import BorderedTable from "./BorderedTable";
 import HiddenColumns from "./HiddenColumns";
 import AddRows from "./AddRows";
 
-export interface column { header: string; accessorKey: string; enableColumnFilter: boolean; enableSorting: boolean };
+export interface column { header: string | (() => React.ReactNode); accessorKey: string; enableColumnFilter: boolean; enableSorting: boolean };
 
 const ReactDataTable = () => {
 
