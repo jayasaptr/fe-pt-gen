@@ -401,7 +401,9 @@ const Payroll = () => {
                         <h6 className="text-15 grow">
                             Payroll (<b className="total-Employs">{data.length}</b>)
                         </h6>
-                        <div className="shrink-0">
+                        {
+                            user.data.user.role === "admin" && (
+                                <div className="shrink-0">
                             <Link
                                 to="#!"
                                 data-modal-target="addPayrollModal"
@@ -413,6 +415,8 @@ const Payroll = () => {
                                 <span className="align-middle">Add  Payroll</span>
                             </Link>
                         </div>
+                            )
+                        }
                     </div>
                     {data && data.length > 0 ? (
                         // for no get from 1 index

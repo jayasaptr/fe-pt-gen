@@ -167,27 +167,35 @@ const Attendance = () => {
                 enableSorting: true,
                 cell: (cell: any) => (
                     <div className="flex gap-2">
-                        <Link
-                            to="#!"
-                            className="flex items-center justify-center size-8 transition-all duration-200 ease-linear rounded-md edit-item-btn bg-slate-100 text-slate-500 hover:text-custom-500 hover:bg-custom-100 dark:bg-zink-600 dark:text-zink-200 dark:hover:bg-custom-500/20 dark:hover:text-custom-500"
-                            onClick={() => {
-                                const data = cell.row.original;
+                        {/* {
+                            user.data.user.role === "admin" ? (
+                                <Link
+                                    to="#!"
+                                    className="flex items-center justify-center size-8 transition-all duration-200 ease-linear rounded-md edit-item-btn bg-slate-100 text-slate-500 hover:text-custom-500 hover:bg-custom-100 dark:bg-zink-600 dark:text-zink-200 dark:hover:bg-custom-500/20 dark:hover:text-custom-500"
+                                    onClick={() => {
+                                        const data = cell.row.original;
 
-                                handleUpdateDataClick(data);
-                            }}
-                        >
-                            <Pencil className="size-4" />
-                        </Link>
-                        <Link
-                            to="#!"
-                            className="flex items-center justify-center size-8 transition-all duration-200 ease-linear rounded-md remove-item-btn bg-slate-100 text-slate-500 hover:text-custom-500 hover:bg-custom-100 dark:bg-zink-600 dark:text-zink-200 dark:hover:bg-custom-500/20 dark:hover:text-custom-500"
-                            onClick={() => {
-                                const data = cell.row.original;
-                                onClickDelete(data);
-                            }}
-                        >
-                            <Trash2 className="size-4" />
-                        </Link>
+                                        handleUpdateDataClick(data);
+                                    }}
+                                >
+                                    <Pencil className="size-4" />
+                                </Link>
+                            ) : null
+                        } */}
+                        {
+                            user.data.user.role === "admin" ? (
+                                <Link
+                                    to="#!"
+                                    className="flex items-center justify-center size-8 transition-all duration-200 ease-linear rounded-md remove-item-btn bg-slate-100 text-slate-500 hover:text-custom-500 hover:bg-custom-100 dark:bg-zink-600 dark:text-zink-200 dark:hover:bg-custom-500/20 dark:hover:text-custom-500"
+                                    onClick={() => {
+                                        const data = cell.row.original;
+                                        onClickDelete(data);
+                                    }}
+                                >
+                                    <Trash2 className="size-4" />
+                                </Link>
+                            ) : null
+                        }
                     </div>
                 ),
             },
@@ -385,7 +393,7 @@ const Attendance = () => {
                         <h6 className="text-15 grow">
                             Attendance (<b className="total-Employs">{data.length}</b>)
                         </h6>
-                        {user.data.user.role === "admin" ? null : (
+                        {/* {user.data.user.role === "admin" ? null : (
                             <div className="shrink-0">
                                 <Link
                                     to="#!"
@@ -398,7 +406,7 @@ const Attendance = () => {
                                     <span className="align-middle">Add  Attendance</span>
                                 </Link>
                             </div>
-                        )}
+                        )} */}
                     </div>
                     {data && data.length > 0 ? (
                         // for no get from 1 index

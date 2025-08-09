@@ -119,16 +119,14 @@ const menuData: any = [
     parentId: 2,
   },
   {
-    label: "Payroll",
-    isTitle: true,
-  },
-  {
     id: "Payroll",
     label: "Payroll",
     icon: <CreditCard />,
     link: "/payroll",
     parentId: 1,
   },
+
+
   {
     label: "Laporan",
     isTitle: true,

@@ -10,6 +10,7 @@ import Flatpickr from "react-flatpickr";
 import ReportPrint from "./print/ReportPrint";
 import ReactToPrint from "react-to-print";
 import { Search } from "lucide-react";
+import dayjs from "dayjs"
 
 const ReportPayroll = () => {
     const [showDateFilter, setShowDateFilter] = useState(false);
@@ -53,6 +54,26 @@ const ReportPayroll = () => {
                 enableColumnFilter: false,
                 enableSorting: true,
             },
+            {
+                header: "Period",
+                accessorKey: "pay_period",
+                enableColumnFilter: false,
+                enableSorting: true,
+                cell: ({ row }: { row: any }) => {
+                    const date = row.getValue("pay_period");
+                    return dayjs(date).format("MMMM"); // contoh output: "Agustus"
+                }
+            },
+            {
+                header: "Date",
+                accessorKey: "paid_at",
+                enableColumnFilter: false,
+                enableSorting: true,
+                cell: ({ row }) => {
+                    const value = row.getValue("paid_at") as string;
+                    return dayjs(value).format("DD");
+                }
+            }
         ],
         []
     );
