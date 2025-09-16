@@ -35,24 +35,40 @@ const ReportPayroll = () => {
                 accessorKey: "basic_salary",
                 enableColumnFilter: false,
                 enableSorting: true,
+                cell: ({ row }: { row: any }) => {
+                    const value = row.getValue("basic_salary");
+                    return `Rp ${Number(value).toLocaleString("id-ID")}`;
+                }
             },
             {
                 header: "Potongan",
                 accessorKey: "deductions",
                 enableColumnFilter: false,
                 enableSorting: true,
+                cell: ({ row }: { row: any }) => {
+                    const value = row.getValue("deductions");
+                    return `Rp ${Number(value).toLocaleString("id-ID")}`;
+                }
             },
             {
                 header: "Bonus",
                 accessorKey: "bonuses",
                 enableColumnFilter: false,
                 enableSorting: true,
+                cell: ({ row }: { row: any }) => {
+                    const value = row.getValue("bonuses");
+                    return `Rp ${Number(value).toLocaleString("id-ID")}`;
+                }
             },
             {
                 header: "Total Gaji",
                 accessorKey: "total_paid",
                 enableColumnFilter: false,
                 enableSorting: true,
+                cell: ({ row }: { row: any }) => {
+                    const value = row.getValue("total_paid");
+                    return `Rp ${Number(value).toLocaleString("id-ID")}`;
+                }
             },
             {
                 header: "Period",

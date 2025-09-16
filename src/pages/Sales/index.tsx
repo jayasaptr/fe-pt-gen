@@ -102,10 +102,14 @@ const SalesPage = () => {
         enableColumnFilter: false,
       },
       {
-        header: "Total Penjualan",
-        accessorKey: "sales_amount",
-        enableColumnFilter: false,
-      },
+  header: "Total Penjualan",
+  accessorKey: "sales_amount",
+  enableColumnFilter: false,
+  cell: ({ row }: { row: any }) => {
+    const value = row.getValue("sales_amount");
+    return `Rp ${Number(value).toLocaleString("id-ID")}`;
+  },
+},
       {
         header: "Status",
         accessorKey: "sales_status",

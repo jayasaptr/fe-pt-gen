@@ -105,6 +105,10 @@ const PurchasePage = () => {
         header: "Total Pembelian",
         accessorKey: "total_amount",
         enableColumnFilter: false,
+        cell:({row}: {row:any}) => {
+          const value = row.getValue("total_amount");
+          return `Rp ${Number(value).toLocaleString("id-ID")}`;
+        }
       },
       {
         header: "Status",

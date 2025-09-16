@@ -111,6 +111,10 @@ const PurchaseItemPage = () => {
                 header: "Total Harga",
                 accessorKey: "total",
                 enableColumnFilter: false,
+                cell: ({ row }: { row: any }) => {
+                    const value = row.getValue("total");
+                    return `Rp ${Number(value).toLocaleString("id-ID")}`;
+                }
             },
             {
                 header: "Action",

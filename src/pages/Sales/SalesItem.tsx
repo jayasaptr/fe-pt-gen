@@ -111,6 +111,10 @@ const SalesItemPage = () => {
                 header: "Total Harga",
                 accessorKey: "subtotal",
                 enableColumnFilter: false,
+                cell: ({ row }: { row: any }) => {
+                    const value = row.getValue("subtotal");
+                    return `Rp ${Number(value).toLocaleString("id-ID")}`;
+                }
             },
             {
                 header: "Action",

@@ -43,9 +43,9 @@ const SalesMonth = ({ data }: any) => {
                         <div className="grow">
                             <p className="mb-1 text-slate-500 dark:text-zink-200">Total Profit</p>
                             <h5 className="text-15">
-                                $
+                                RP
                                 <CountUp end={data?.total_profit ?? 0} decimals={0} className="counter-value" />
-                                k
+                                
                             </h5>
                         </div>
                     </div>

@@ -55,6 +55,10 @@ const ReportPembelian = () => {
                 accessorKey: "total",
                 enableColumnFilter: false,
                 enableSorting: true,
+                cell: ({ row }: { row: any }) => {
+                    const value = row.getValue("total");
+                    return `Rp ${Number(value).toLocaleString("id-ID")}`;
+                }
             },
             {
                 header: () => <span className="action-column">Action</span>,
@@ -128,6 +132,10 @@ const ReportPembelian = () => {
                 accessorKey: "total",
                 enableColumnFilter: false,
                 enableSorting: true,
+                cell: ({ row }: { row: any }) => {
+                    const value = row.getValue("total");
+                    return `Rp ${Number(value).toLocaleString("id-ID")}`;
+                }
             },
             {
                 header: () => <span className="action-column">Action</span>,

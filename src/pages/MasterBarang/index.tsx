@@ -135,6 +135,10 @@ const MasterBarang = () => {
         header: "Harga Satuan",
         accessorKey: "price",
         enableColumnFilter: false,
+        cell: ({ row }: { row: any }) => {
+          const value = row.getValue("price");
+          return `Rp ${Number(value).toLocaleString("id-ID")}`;
+        }
       },
       {
         header: "Action",
