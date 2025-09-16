@@ -111,6 +111,13 @@ const menuData: any = [
     link: "/employee",
     parentId: 1,
   },
+  // {
+  //   id: "Service",
+  //   label: "Service",
+  //   icon: <BookUser />,
+  //   link: "/service",
+  //   parentId: 1,
+  // },
   {
     id: "Attendance",
     label: "Attendance",
@@ -187,6 +194,14 @@ const menuData: any = [
     link: "/report-stock-movements",
     parentId: 1,
   },
+
+  // {
+  //   id: "laporan_service",
+  //   label: "Laporan Service",
+  //   icon: <UserRoundCheck />,
+  //   link: "/report-service",
+  //   parentId: 1,
+  // },
 
   // {
   //   id: "laporan_pelanggan",

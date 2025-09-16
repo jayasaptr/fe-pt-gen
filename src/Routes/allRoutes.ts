@@ -28,6 +28,8 @@ import ReportKaryawan from "report/ReportKaryawan";
 import ReportAbsensi from "report/ReportAbsensi";
 import ReportPayroll from "report/ReportPayroll";
 import ReportStockMovement from "report/ReportStockMovement";
+import Service from "pages/Service";
+import ReportService from "report/ReportService";
 
 interface RouteObject {
   path: string;
@@ -65,6 +67,8 @@ const authProtectedRoutes: Array<RouteObject> = [
   { path: "/report-absensi", component: ReportAbsensi },
   { path: "/report-payroll", component: ReportPayroll },
   { path: "/report-stock-movements", component: ReportStockMovement },
+  { path: "/service", component: Service },
+  { path: "/report-service", component: ReportService },
 ];
 
 const publicRoutes = [
