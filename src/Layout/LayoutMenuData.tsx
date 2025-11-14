@@ -1,35 +1,20 @@
 import {
+  Banknote,
   BookUser,
   Box,
-  BoxesIcon,
   Briefcase,
   CalendarCheck,
-  ClipboardEditIcon,
-  Contact,
-  Container,
   CreditCard,
-  LucideBox,
-  Mail,
-  MessageSquare,
   MonitorDot,
-  Package,
   PackageCheck,
-  PackageCheckIcon,
   PackageMinus,
-  PackageMinusIcon,
   PackagePlus,
-  PictureInPicture2,
-  PieChart,
   ReceiptText,
   ShoppingCart,
   Tag,
   Truck,
   User,
-  UserMinus2,
-  UserPlus2Icon,
-  UserRound,
-  UserRoundCheck,
-  Warehouse,
+  UserRoundCheck
 } from "lucide-react";
 
 const menuData: any = [
@@ -139,6 +124,13 @@ const menuData: any = [
     isTitle: true,
   },
   {
+    id: "laporan_cash_flow",
+    label: "Laporan Arus Kas",
+    icon: <Banknote />,
+    link: "/report-arus-kas",
+    parentId: 1,
+  },
+  {
     id: "laporan_barang_tersedia",
     label: "Laporan Stok Barang Tersedia",
     icon: <PackagePlus />,
@@ -235,3 +227,4 @@ const menuData: any = [
 ];
 
 export { menuData };
+

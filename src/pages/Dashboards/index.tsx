@@ -1,13 +1,14 @@
-import React, { use, useEffect, useMemo, useState } from 'react';
 import BreadCrumb from 'Common/BreadCrumb';
+import React, { useEffect, useState } from 'react';
 
 // Icons
-import { CalendarDays } from 'lucide-react';
 import { axiosInstance } from 'lib/axios';
+import { CalendarDays } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
-import TopSellingProducts from './TopSellingProducts';
+import Cashflow from './CashFlow';
 import SalesMonth from './SalesMonth';
+import TopSellingProducts from './TopSellingProducts';
 
 
 const Dashboard = () => {
@@ -184,9 +185,13 @@ const Dashboard = () => {
       )}
       {
         user.data.user.role === "admin" && (
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-12">
-            <TopSellingProducts data={data} />
-            <SalesMonth data={data} />
+          <div>
+            <div className="">
+              <TopSellingProducts data={data} />
+              <SalesMonth data={data} />
+            </div>
+
+            <Cashflow data={data} />
           </div>
         )
       }
